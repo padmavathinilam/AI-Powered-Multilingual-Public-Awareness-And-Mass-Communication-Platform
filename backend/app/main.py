@@ -9,6 +9,9 @@ from app.routers.messages import router as messages_router
 from app.routers.delivery_logs import router as delivery_logs_router
 from app.routers.feedback import router as feedback_router
 from app.routers.segment import router as segments_router
+from app.routers.auth import router as auth_router
+from app.routers import ai
+
 
 
 app = FastAPI(
@@ -25,6 +28,8 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -40,6 +45,8 @@ app.include_router(messages_router)
 app.include_router(delivery_logs_router)
 app.include_router(feedback_router)
 app.include_router(segments_router)
+app.include_router(auth_router)
+app.include_router(ai.router)
 
 
 @app.get("/")

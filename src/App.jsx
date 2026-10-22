@@ -1,1302 +1,1065 @@
-import api from "./services/api";
+
 import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "./services/api";
+
+import Register from "./pages/Register.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Campaigns from "./pages/Campaigns.jsx";
+import Messages from "./pages/Messages.jsx";
+import Login from "./pages/Login.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Audience from "./pages/Audience.jsx";
+import Segments from "./pages/Segments.jsx";
+import SegmentBuilder from "./pages/SegmentBuilder.jsx";
+import SegmentMembers from "./pages/SegmentMembers.jsx";
+import SidebarLayout from "./components/SidebarLayout.jsx";
+import CampaignWizard from "./pages/CampaignWizard.jsx";
+import Templates from "./pages/Templates.jsx";
+import ContentStudio from "./pages/ContentStudio.jsx";
 
 const languages = [
-  {
-    text: "नमस्ते",
-    name: "Hindi",
-    flag: "🇮🇳",
-    position: "lang-one",
-  },
-  {
-    text: "నమస్కారం",
-    name: "Telugu",
-    flag: "🇮🇳",
-    position: "lang-two",
-  },
-  {
-    text: "வணக்கம்",
-    name: "Tamil",
-    flag: "🇮🇳",
-    position: "lang-three",
-  },
-  {
-    text: "ಕನ್ನಡ",
-    name: "Kannada",
-    flag: "🇮🇳",
-    position: "lang-four",
-  },
-  {
-    text: "മലയാളം",
-    name: "Malayalam",
-    flag: "🇮🇳",
-    position: "lang-five",
-  },
-  {
-    text: "मराठी",
-    name: "Marathi",
-    flag: "🇮🇳",
-    position: "lang-six",
-  },
-];
-
-const impactItems = [
-  {
-    icon: "♥",
-    title: "Health",
-    text: "Better health for all",
-    color: "pink",
-  },
-  {
-    icon: "🎓",
-    title: "Education",
-    text: "Knowledge for tomorrow",
-    color: "blue",
-  },
-  {
-    icon: "✓",
-    title: "Safety",
-    text: "Safer communities",
-    color: "green",
-  },
-  {
-    icon: "🏛",
-    title: "Government",
-    text: "Transparent & informed",
-    color: "purple",
-  },
-  {
-    icon: "👥",
-    title: "Community",
-    text: "Stronger together",
-    color: "orange",
-  },
+  { native: "नमस्ते", name: "Hindi" },
+  { native: "నమస్కారం", name: "Telugu" },
+  { native: "வணக்கம்", name: "Tamil" },
+  { native: "ಕನ್ನಡ", name: "Kannada" },
+  { native: "മലയാളം", name: "Malayalam" },
+  { native: "मराठी", name: "Marathi" },
 ];
 
 const features = [
   {
     icon: "🌐",
-    title: "Multilingual",
-    text: "Support for 100+ languages with accurate translation.",
+    title: "Multilingual Communication",
+    text: "Share important information in languages people understand.",
   },
   {
     icon: "✦",
-    title: "AI Content",
-    text: "Generate and optimize messages with AI.",
+    title: "AI-Powered Messaging",
+    text: "Create clear and accessible public awareness messages.",
   },
   {
-    icon: "📡",
-    title: "Multi Channel",
-    text: "Reach people via SMS, WhatsApp, Email, Social Media and more.",
+    icon: "◉",
+    title: "Campaign Management",
+    text: "Create, organize and manage public awareness campaigns.",
   },
   {
-    icon: "📊",
-    title: "Analytics",
-    text: "Track delivery, engagement and real-time impact.",
+    icon: "↗",
+    title: "Community Impact",
+    text: "Help communities receive important information on time.",
   },
 ];
 
-const steps = [
-  {
-    number: "01",
-    icon: "◎",
-    title: "Define",
-    text: "Create your campaign goal and audience.",
-  },
-  {
-    number: "02",
-    icon: "✦",
-    title: "Generate",
-    text: "Use AI to craft powerful messages.",
-  },
-  {
-    number: "03",
-    icon: "➤",
-    title: "Channels",
-    text: "Choose languages and delivery channels.",
-  },
-  {
-    number: "04",
-    icon: "▥",
-    title: "Monitor",
-    text: "Track performance and get insights.",
-  },
-];
+function ProtectedPage({ children }) {
+  return (
+    <ProtectedRoute>
+      <SidebarLayout>{children}</SidebarLayout>
+    </ProtectedRoute>
+  );
+}
 
-function App() {
+export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeLanguage, setActiveLanguage] = useState(0);
   const [campaigns, setCampaigns] = useState([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       setActiveLanguage((current) => (current + 1) % languages.length);
     }, 2200);
 
-    api
-      .get("/health")
-      .then((response) => {
-        console.log("Backend connected:", response.data);
-      })
-      .catch((error) => {
-        console.error("Backend connection failed:", error);
-      });
+    if (location.pathname === "/") {
+      api
+        .get("/api/campaigns/")
+        .then((response) => {
+          const data = response.data;
+          setCampaigns(
+            Array.isArray(data) ? data : data?.campaigns || []
+          );
+        })
+        .catch(() => setCampaigns([]));
+    }
 
-    api
-      .get("/api/campaigns/")
-      .then((response) => {
-        setCampaigns(response.data);
-        console.log("Campaigns loaded:", response.data);
-      })
-      .catch((error) => {
-        console.error("Campaigns loading failed:", error);
-      });
+    return () => window.clearInterval(interval);
+  }, [location.pathname]);
 
-    return () => clearInterval(interval);
-  }, []);
+  // Authentication pages
+  if (location.pathname === "/login") {
+    return <Login />;
+  }
 
+  if (location.pathname === "/register") {
+    return <Register />;
+  }
+
+  // Dashboard
+  if (location.pathname === "/dashboard") {
+    return (
+      <ProtectedPage>
+        <Dashboard />
+      </ProtectedPage>
+    );
+  }
+
+  // Campaign creation wizard
+  if (
+    location.pathname === "/campaigns/new" ||
+    location.pathname === "/campaigns/create"
+  ) {
+    return (
+      <ProtectedPage>
+        <CampaignWizard />
+      </ProtectedPage>
+    );
+  }
+
+  // Campaign management
+  if (location.pathname === "/campaigns") {
+    return (
+      <ProtectedPage>
+        <Campaigns />
+      </ProtectedPage>
+    );
+  }
+
+  // Template library
+  if (location.pathname === "/templates") {
+    return (
+      <ProtectedPage>
+        <Templates />
+      </ProtectedPage>
+    );
+  }
+  
+  // AI Content Studio
+  if (location.pathname === "/content-studio") {
+    return (
+      <ProtectedPage>
+        <ContentStudio />
+      </ProtectedPage>
+    );
+  }
+
+
+  // Messages
+  if (location.pathname === "/messages") {
+    return (
+      <ProtectedPage>
+        <Messages />
+      </ProtectedPage>
+    );
+  }
+
+  // Audience
+  if (location.pathname === "/audience") {
+    return (
+      <ProtectedPage>
+        <Audience />
+      </ProtectedPage>
+    );
+  }
+
+  // Audience segments list
+  if (location.pathname === "/segments") {
+    return (
+      <ProtectedPage>
+        <Segments />
+      </ProtectedPage>
+    );
+  }
+
+  // Create a new segment
+  if (
+    location.pathname === "/segments/new" ||
+    location.pathname === "/segments/create"
+  ) {
+    return (
+      <ProtectedPage>
+        <SegmentBuilder />
+      </ProtectedPage>
+    );
+  }
+
+
+  // Edit an existing segment
+  const editMatch = location.pathname.match(
+    /^\/segments\/([^/]+)\/edit$/
+  );
+
+  if (editMatch) {
+    return (
+      <ProtectedPage>
+        <SegmentBuilder key={editMatch[1]} />
+      </ProtectedPage>
+    );
+  }
+
+  // View members of a selected segment
+  const membersMatch = location.pathname.match(
+    /^\/segments\/([^/]+)$/
+  );
+
+  if (membersMatch) {
+    return (
+      <ProtectedPage>
+        <SegmentMembers
+          key={membersMatch[1]}
+          segmentId={membersMatch[1]}
+        />
+      </ProtectedPage>
+    );
+  }
+
+  // Homepage navigation helper
   const scrollTo = (id) => {
     setMenuOpen(false);
-
     document.getElementById(id)?.scrollIntoView({
       behavior: "smooth",
+      block: "start",
     });
   };
 
+  // Landing page
   return (
-    <div className="app">
-
+    <div className="pc-home">
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-        .new-ai-visual {
-          position: relative;
-          width: 100%;
-          height: 610px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: visible;
+        .pc-home {
+          min-height: 100vh;
+          background: #fff;
+          color: #111b3a;
+          font-family: 'DM Sans', sans-serif;
         }
 
-        .ai-atmosphere {
-          position: absolute;
-          width: 570px;
-          height: 570px;
-          border-radius: 50%;
-          background:
-            radial-gradient(
-              circle,
-              rgba(74, 164, 255, .40) 0%,
-              rgba(76, 117, 255, .24) 35%,
-              rgba(123, 87, 255, .13) 58%,
-              transparent 74%
-            );
-          filter: blur(10px);
-          animation: atmospherePulse 5s ease-in-out infinite;
-        }
+        .pc-home * { box-sizing: border-box; }
+        .pc-home button { font-family: inherit; cursor: pointer; }
 
-        @keyframes atmospherePulse {
-          0%,100% {
-            transform: scale(.94);
-            opacity: .75;
-          }
-
-          50% {
-            transform: scale(1.08);
-            opacity: 1;
-          }
-        }
-
-        .ai-world {
-          position: relative;
-          width: 345px;
-          height: 345px;
-          border-radius: 50%;
-          z-index: 10;
-
-          background:
-            radial-gradient(
-              circle at 30% 20%,
-              #a5e8ff 0%,
-              #55b5ff 15%,
-              #2874df 42%,
-              #173d9c 70%,
-              #071c59 100%
-            );
-
-          border: 2px solid rgba(183,232,255,.8);
-
-          box-shadow:
-            inset -45px -30px 80px rgba(0,15,80,.65),
-            inset 25px 20px 55px rgba(255,255,255,.22),
-            0 0 30px rgba(67,173,255,.9),
-            0 0 80px rgba(78,110,255,.55);
-
-          overflow: hidden;
-
-          animation: worldFloat 6s ease-in-out infinite;
-        }
-
-        @keyframes worldFloat {
-          0%,100% {
-            transform: translateY(0);
-          }
-
-          50% {
-            transform: translateY(-9px);
-          }
-        }
-
-        .world-dots {
-          position: absolute;
-          inset: 18px;
-          border-radius: 50%;
-          opacity: .65;
-
-          background-image:
-            radial-gradient(
-              circle,
-              rgba(255,255,255,.9) 1.3px,
-              transparent 1.8px
-            );
-
-          background-size: 10px 10px;
-
-          mask-image:
-            radial-gradient(
-              ellipse at center,
-              black 20%,
-              transparent 72%
-            );
-
-          -webkit-mask-image:
-            radial-gradient(
-              ellipse at center,
-              black 20%,
-              transparent 72%
-            );
-
-          animation: dotsMove 10s linear infinite;
-        }
-
-        @keyframes dotsMove {
-          from {
-            transform: translateX(0);
-          }
-
-          to {
-            transform: translateX(-25px);
-          }
-        }
-
-        .globe-line {
-          position: absolute;
-          border: 1px solid rgba(181,232,255,.25);
-          border-radius: 50%;
-        }
-
-        .globe-line.one {
-          inset: 35px;
-        }
-
-        .globe-line.two {
-          top: 95px;
-          left: -20px;
-          right: -20px;
-          height: 145px;
-        }
-
-        .globe-line.three {
-          top: 25px;
-          bottom: 25px;
-          left: 105px;
-          width: 125px;
-        }
-
-        .globe-light {
-          position: absolute;
-          width: 180px;
-          height: 180px;
-          left: 30px;
-          top: 15px;
-          border-radius: 50%;
-
-          background:
-            radial-gradient(
-              circle,
-              rgba(255,255,255,.52),
-              rgba(255,255,255,.08) 48%,
-              transparent 72%
-            );
-
-          filter: blur(5px);
-        }
-
-        .ai-center {
-          position: absolute;
-          width: 190px;
-          height: 190px;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%,-50%);
-          border-radius: 50%;
-
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-
-          color: white;
-
-          background:
-            radial-gradient(
-              circle at 35% 20%,
-              #5d8eff,
-              #1c48bd 50%,
-              #071b62 100%
-            );
-
-          border: 1px solid rgba(203,238,255,.65);
-
-          box-shadow:
-            0 0 30px rgba(93,194,255,.7),
-            inset 0 0 35px rgba(124,205,255,.28);
-
-          z-index: 20;
-        }
-
-        .ai-star {
-          font-size: 24px;
-          margin-bottom: 3px;
-          text-shadow: 0 0 15px white;
-          animation: starGlow 2s ease-in-out infinite;
-        }
-
-        @keyframes starGlow {
-          0%,100% {
-            transform: scale(1);
-          }
-
-          50% {
-            transform: scale(1.3);
-          }
-        }
-
-        .ai-center strong {
-          font-size: 58px;
-          line-height: .9;
-          letter-spacing: -3px;
-          font-family: Arial, sans-serif;
-        }
-
-        .ai-center span {
-          margin-top: 12px;
-          text-align: center;
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 3px;
-          line-height: 1.5;
-        }
-
-        .ai-ring {
-          position: absolute;
-          border-radius: 50%;
-          border: 1px solid rgba(101,166,255,.35);
-          pointer-events: none;
-        }
-
-        .ai-ring.ring1 {
-          width: 410px;
-          height: 410px;
-          animation: rotateRing 14s linear infinite;
-        }
-
-        .ai-ring.ring2 {
-          width: 510px;
-          height: 510px;
-          border-color: rgba(126,102,255,.27);
-          animation: rotateRingReverse 18s linear infinite;
-        }
-
-        .ai-ring.ring3 {
-          width: 600px;
-          height: 290px;
-          transform: rotate(-25deg);
-          border-color: rgba(72,180,255,.23);
-          animation: ringFloat 6s ease-in-out infinite;
-        }
-
-        @keyframes rotateRing {
-          from {
-            transform: rotate(0deg);
-          }
-
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes rotateRingReverse {
-          from {
-            transform: rotate(360deg);
-          }
-
-          to {
-            transform: rotate(0deg);
-          }
-        }
-
-        @keyframes ringFloat {
-          0%,100% {
-            transform: rotate(-25deg) scale(1);
-          }
-
-          50% {
-            transform: rotate(-25deg) scale(1.07);
-          }
-        }
-
-        .new-language-card {
-          position: absolute;
-          z-index: 30;
-          min-width: 150px;
-          padding: 12px 16px;
-
-          display: flex;
-          align-items: center;
-          gap: 11px;
-
-          border-radius: 20px;
-
+        .pc-navbar {
+          position: sticky;
+          top: 0;
+          z-index: 50;
           background: rgba(255,255,255,.96);
-
-          border: 1px solid rgba(220,230,250,.9);
-
-          box-shadow:
-            0 15px 35px rgba(37,70,140,.18);
-
-          backdrop-filter: blur(15px);
-
-          transition:
-            transform .4s ease,
-            box-shadow .4s ease;
+          border-bottom: 1px solid #e8edf7;
+          backdrop-filter: blur(14px);
         }
 
-        .new-language-card:hover {
-          transform: translateY(-7px) scale(1.04);
-          box-shadow:
-            0 22px 45px rgba(37,70,140,.25);
-        }
-
-        .new-language-card.active {
-          transform: translateY(-7px) scale(1.05);
-          box-shadow: 0 20px 45px rgba(69,91,210,.3);
-        }
-
-        .new-flag {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-
+        .pc-nav-inner {
+          width: min(1250px, calc(100% - 40px));
+          min-height: 68px;
+          margin: auto;
           display: flex;
           align-items: center;
-          justify-content: center;
-
-          background: #f7faff;
-          font-size: 22px;
-          flex-shrink: 0;
+          justify-content: space-between;
+          gap: 20px;
         }
 
-        .new-language-text strong {
-          display: block;
-          color: #17356c;
-          font-size: 15px;
+        .pc-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: #111b3a;
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 18px;
           font-weight: 800;
           white-space: nowrap;
         }
 
-        .new-language-text small {
+        .pc-brand-symbol {
+          width: 34px;
+          height: 36px;
+          display: grid;
+          place-items: center;
+          border-radius: 10px;
+          background: linear-gradient(135deg,#4784ff,#713df2);
+          color: white;
+          font-size: 21px;
+        }
+
+        .pc-brand-name span { color: #6252f6; }
+
+        .pc-nav-links {
+          display: flex;
+          align-items: center;
+          gap: 22px;
+        }
+
+        .pc-nav-links button {
+          padding: 12px 0;
+          border: 0;
+          background: transparent;
+          color: #26334f;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .pc-nav-links button:hover { color: #6252f6; }
+
+        .pc-nav-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .pc-login-button,
+        .pc-primary-button,
+        .pc-secondary-button {
+          min-height: 42px;
+          padding: 0 17px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .pc-login-button {
+          border: 1px solid #d5def1;
+          background: white;
+          color: #172344;
+        }
+
+        .pc-primary-button {
+          border: 0;
+          background: linear-gradient(105deg,#397aff,#713cf1);
+          color: white;
+          box-shadow: 0 8px 20px rgba(88,76,240,.17);
+        }
+
+        .pc-secondary-button {
+          border: 1px solid #d4ddef;
+          background: white;
+          color: #172344;
+        }
+
+        .pc-mobile-toggle {
+          display: none;
+          padding: 8px 11px;
+          border: 1px solid #e1e6f3;
+          border-radius: 9px;
+          background: white;
+          font-size: 20px;
+        }
+
+        .pc-hero {
+          background:
+            radial-gradient(ellipse at 78% 40%,rgba(125,113,255,.17),transparent 36%),
+            radial-gradient(ellipse at 10% 70%,rgba(87,158,255,.1),transparent 38%),
+            linear-gradient(110deg,#f1f6ff,#fff 48%,#eef0ff);
+        }
+
+        .pc-hero-inner {
+          width: min(1250px,calc(100% - 48px));
+          min-height: 580px;
+          margin: auto;
+          padding: 55px 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          align-items: center;
+          gap: 30px;
+        }
+
+        .pc-eyebrow {
+          display: inline-block;
+          padding: 9px 13px;
+          border: 1px solid #cdd8ff;
+          border-radius: 30px;
+          background: #eef3ff;
+          color: #4d4df3;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: .7px;
+        }
+
+        .pc-hero h1 {
+          margin: 23px 0 18px;
+          font-family: 'Space Grotesk',sans-serif;
+          font-size: clamp(42px,5vw,66px);
+          line-height: 1.04;
+          letter-spacing: -2px;
+        }
+
+        .pc-gradient-text {
+          background: linear-gradient(100deg,#397bff,#813cf0);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .pc-hero-description {
+          max-width: 500px;
+          color: #667895;
+          font-size: 14px;
+          line-height: 1.9;
+        }
+
+        .pc-hero-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 24px;
+        }
+
+        .pc-trust-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: 25px;
+          color: #283858;
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        .pc-trust-row span {
           display: block;
           margin-top: 3px;
-          color: #7b89a3;
-          font-size: 10px;
-          font-weight: 600;
+          color: #7886a2;
+          font-weight: 500;
         }
 
-        .lang-one {
-          top: 5%;
-          left: 2%;
+        .pc-globe-stage {
+          position: relative;
+          min-height: 440px;
+          display: grid;
+          place-items: center;
         }
 
-        .lang-two {
-          top: 10%;
-          right: 0;
-        }
-
-        .lang-three {
-          top: 41%;
-          left: -8%;
-        }
-
-        .lang-four {
-          top: 43%;
-          right: -8%;
-        }
-
-        .lang-five {
-          bottom: 15%;
-          left: 5%;
-        }
-
-        .lang-six {
-          bottom: 11%;
-          right: 3%;
-        }
-
-        .globe-point {
+        .pc-globe-orbit {
           position: absolute;
-          width: 7px;
-          height: 7px;
+          left: 50%;
+          top: 50%;
+          border: 1px solid rgba(126,120,255,.25);
           border-radius: 50%;
-          background: white;
-          box-shadow:
-            0 0 8px white,
-            0 0 20px #53bfff,
-            0 0 35px #526cff;
-          z-index: 15;
-          animation: pointPulse 2s ease-in-out infinite;
+          transform: translate(-50%,-50%);
         }
 
-        .point1 {
-          top: 25%;
-          left: 23%;
+        .pc-orbit-one { width: 380px; height: 380px; }
+        .pc-orbit-two { width: 320px; height: 320px; }
+        .pc-orbit-three { width: 260px; height: 260px; }
+
+        .pc-globe {
+          position: relative;
+          z-index: 2;
+          width: 230px;
+          height: 230px;
+          display: grid;
+          place-items: center;
+          border: 2px solid #8ce3ff;
+          border-radius: 50%;
+          background: radial-gradient(circle at 28% 22%,#8ce3ff,#3d9de7 26%,#1456bb 59%,#061d68);
+          box-shadow: 0 0 35px rgba(66,148,255,.48),inset -23px -15px 35px rgba(1,18,74,.45);
+          animation: pc-float 5s ease-in-out infinite;
         }
 
-        .point2 {
-          top: 38%;
-          right: 20%;
-          animation-delay: .5s;
-        }
-
-        .point3 {
-          bottom: 25%;
-          left: 37%;
-          animation-delay: 1s;
-        }
-
-        @keyframes pointPulse {
-          0%,100% {
-            opacity: .4;
-            transform: scale(.7);
-          }
-
-          50% {
-            opacity: 1;
-            transform: scale(1.5);
-          }
-        }
-
-        .signal-left,
-        .signal-right {
-          position: absolute;
-          z-index: 20;
+        .pc-globe-center {
+          width: 130px;
+          height: 130px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(255,255,255,.44);
+          border-radius: 50%;
+          background: linear-gradient(145deg,#477fff,#123eaa);
           color: white;
-          font-size: 28px;
-          letter-spacing: -8px;
-          text-shadow: 0 0 15px #65baff;
-          animation: signalPulse 2.5s ease-in-out infinite;
         }
 
-        .signal-left {
-          left: -3%;
-          top: 47%;
-          transform: rotate(180deg);
+        .pc-globe-center strong {
+          font-family: 'Space Grotesk',sans-serif;
+          font-size: 40px;
         }
 
-        .signal-right {
-          right: -3%;
-          top: 47%;
+        .pc-globe-center small {
+          margin-top: 5px;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 2px;
+          text-align: center;
         }
 
-        @keyframes signalPulse {
-          0%,100% {
-            opacity: .35;
+        .pc-language-card {
+          position: absolute;
+          z-index: 5;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 10px 13px;
+          border: 1px solid #e2e9fa;
+          border-radius: 14px;
+          background: white;
+          box-shadow: 0 12px 30px rgba(50,77,135,.13);
+        }
+
+        .pc-language-card strong {
+          display: block;
+          color: #18305f;
+          font-size: 13px;
+        }
+
+        .pc-language-card small {
+          display: block;
+          margin-top: 3px;
+          color: #8997b1;
+          font-size: 10px;
+        }
+
+        .pc-lang-0 { top: 7%; left: 5%; }
+        .pc-lang-1 { top: 10%; right: 0; }
+        .pc-lang-2 { top: 42%; left: 0; }
+        .pc-lang-3 { top: 44%; right: 0; }
+        .pc-lang-4 { bottom: 9%; left: 5%; }
+        .pc-lang-5 { bottom: 8%; right: 4%; }
+
+        .pc-impact-wrap {
+          width: min(1130px,calc(100% - 48px));
+          margin: -2px auto 0;
+          padding-bottom: 30px;
+        }
+
+        .pc-impact-strip {
+          display: grid;
+          grid-template-columns: repeat(5,minmax(0,1fr));
+          gap: 15px;
+          padding: 23px;
+          border: 1px solid #dce5fb;
+          border-radius: 18px;
+          background: #f7f9ff;
+        }
+
+        .pc-impact-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .pc-impact-icon {
+          width: 38px;
+          height: 38px;
+          display: grid;
+          place-items: center;
+          flex-shrink: 0;
+          border-radius: 50%;
+          font-size: 17px;
+        }
+
+        .pc-impact-item strong {
+          display: block;
+          font-size: 12px;
+        }
+
+        .pc-impact-item small {
+          display: block;
+          margin-top: 4px;
+          color: #8190aa;
+          font-size: 10px;
+        }
+
+        .pc-section {
+          padding: 75px 24px;
+          scroll-margin-top: 80px;
+        }
+
+        .pc-section-inner {
+          width: min(1130px,100%);
+          margin: auto;
+        }
+
+        .pc-section-eyebrow {
+          color: #5b50f4;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 1.6px;
+          text-align: center;
+        }
+
+        .pc-section-title {
+          margin: 13px 0;
+          font-family: 'Space Grotesk',sans-serif;
+          font-size: clamp(28px,3.5vw,43px);
+          letter-spacing: -1px;
+          text-align: center;
+        }
+
+        .pc-section-description {
+          max-width: 620px;
+          margin: 0 auto;
+          color: #71809b;
+          font-size: 14px;
+          line-height: 1.8;
+          text-align: center;
+        }
+
+        .pc-feature-grid {
+          display: grid;
+          grid-template-columns: repeat(4,minmax(0,1fr));
+          gap: 18px;
+          margin-top: 38px;
+        }
+
+        .pc-feature-card {
+          padding: 24px 20px;
+          border: 1px solid #e4eaf6;
+          border-radius: 16px;
+          background: white;
+          box-shadow: 0 12px 35px rgba(35,55,100,.045);
+        }
+
+        .pc-feature-icon {
+          width: 45px;
+          height: 45px;
+          display: grid;
+          place-items: center;
+          border-radius: 13px;
+          background: #eef0ff;
+          color: #5b50f4;
+          font-size: 22px;
+        }
+
+        .pc-feature-card h3 {
+          margin: 18px 0 9px;
+          font-size: 15px;
+        }
+
+        .pc-feature-card p {
+          margin: 0;
+          color: #77859e;
+          font-size: 12px;
+          line-height: 1.8;
+        }
+
+        .pc-steps-section { background: #f7f9ff; }
+
+        .pc-steps-grid {
+          display: grid;
+          grid-template-columns: repeat(3,minmax(0,1fr));
+          gap: 22px;
+          margin-top: 38px;
+        }
+
+        .pc-step-card {
+          padding: 25px;
+          border: 1px solid #e2e8f5;
+          border-radius: 16px;
+          background: white;
+        }
+
+        .pc-step-number {
+          width: 42px;
+          height: 42px;
+          display: grid;
+          place-items: center;
+          border-radius: 12px;
+          background: linear-gradient(120deg,#397aff,#713cf1);
+          color: white;
+          font-weight: 800;
+        }
+
+        .pc-step-card h3 { margin: 18px 0 8px; }
+
+        .pc-step-card p {
+          margin: 0;
+          color: #75839d;
+          font-size: 13px;
+          line-height: 1.8;
+        }
+
+        .pc-campaign-status {
+          width: fit-content;
+          margin: 28px auto 0;
+          padding: 13px 19px;
+          border: 1px solid #e1e7f4;
+          border-radius: 12px;
+          color: #75839d;
+          background: white;
+          font-size: 13px;
+        }
+
+        .pc-cta {
+          padding: 60px 24px;
+          background: linear-gradient(110deg,#f0f5ff,#f8f7ff);
+          text-align: center;
+        }
+
+        .pc-cta h2 {
+          margin: 0 0 13px;
+          font-family: 'Space Grotesk',sans-serif;
+          font-size: clamp(28px,4vw,42px);
+        }
+
+        .pc-cta p {
+          max-width: 560px;
+          margin: 0 auto 24px;
+          color: #70809c;
+          font-size: 14px;
+          line-height: 1.8;
+        }
+
+        .pc-footer {
+          padding: 24px;
+          border-top: 1px solid #e6ebf5;
+          color: #8190a8;
+          text-align: center;
+          font-size: 11px;
+        }
+
+        @keyframes pc-float {
+          0%,100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @media (max-width: 1000px) {
+          .pc-nav-links { gap: 12px; }
+          .pc-feature-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+          .pc-impact-strip { grid-template-columns: repeat(3,minmax(0,1fr)); }
+          .pc-globe { width: 200px; height: 200px; }
+          .pc-orbit-one { width: 330px; height: 330px; }
+          .pc-orbit-two { width: 280px; height: 280px; }
+          .pc-orbit-three { width: 235px; height: 235px; }
+        }
+
+        @media (max-width: 760px) {
+          .pc-nav-inner { flex-wrap: wrap; padding: 12px 0; }
+          .pc-mobile-toggle { display: block; }
+          .pc-nav-links {
+            display: none;
+            order: 3;
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
           }
-
-          50% {
-            opacity: 1;
+          .pc-nav-links.pc-menu-open { display: flex; }
+          .pc-nav-links button { text-align: left; padding: 12px 0; }
+          .pc-hero-inner {
+            grid-template-columns: 1fr;
+            padding: 45px 0 25px;
           }
+          .pc-globe-stage { min-height: 390px; }
+          .pc-impact-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
+          .pc-steps-grid { grid-template-columns: 1fr; }
         }
 
-        @media(max-width: 900px) {
-          .new-ai-visual {
-            height: 540px;
-            transform: scale(.88);
-          }
+        @media (max-width: 480px) {
+          .pc-nav-inner { width: calc(100% - 24px); }
+          .pc-brand { font-size: 15px; }
+          .pc-nav-actions { gap: 5px; }
+          .pc-login-button,.pc-primary-button { padding: 0 11px; }
+          .pc-hero-inner { width: calc(100% - 32px); }
+          .pc-hero h1 { font-size: 43px; }
+          .pc-globe-stage { min-height: 330px; }
+          .pc-globe { width: 165px; height: 165px; }
+          .pc-globe-center { width: 100px; height: 100px; }
+          .pc-globe-center strong { font-size: 32px; }
+          .pc-orbit-one { width: 270px; height: 270px; }
+          .pc-orbit-two { width: 225px; height: 225px; }
+          .pc-orbit-three { width: 190px; height: 190px; }
+          .pc-language-card { padding: 7px; gap: 5px; }
+          .pc-language-card strong { font-size: 10px; }
+          .pc-language-card small { font-size: 8px; }
+          .pc-impact-wrap { width: calc(100% - 24px); }
+          .pc-impact-strip { padding: 13px; gap: 13px; }
+          .pc-impact-icon { width: 29px; height: 29px; }
+          .pc-impact-item { gap: 6px; }
+          .pc-impact-item strong { font-size: 10px; }
+          .pc-impact-item small { font-size: 8px; }
+          .pc-section { padding: 55px 18px; }
+          .pc-feature-grid { gap: 12px; }
+          .pc-feature-card { padding: 17px 13px; }
+          .pc-feature-card h3 { font-size: 13px; }
+          .pc-feature-card p { font-size: 11px; }
         }
 
-        @media(max-width: 600px) {
-          .new-ai-visual {
-            height: 500px;
-            transform: scale(.68);
-            margin: -70px -80px;
-          }
+        @media (prefers-reduced-motion: reduce) {
+          .pc-globe { animation: none; }
         }
-
       `}</style>
 
-      <header className="navbar">
-        <div className="nav-container">
-
+      <header className="pc-navbar">
+        <div className="pc-nav-inner">
           <button
-            className="brand"
+            className="pc-brand"
             onClick={() => scrollTo("home")}
+            aria-label="AI PublicConnect home"
           >
-            <div className="brand-icon">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-
-            <div className="brand-text">
-              <span className="brand-ai">AI</span>
-              <span>PublicConnect</span>
-            </div>
+            <span className="pc-brand-symbol">P</span>
+            <span className="pc-brand-name">
+              AI <span>PublicConnect</span>
+            </span>
           </button>
 
-          <nav className={`nav-links ${menuOpen ? "mobile-open" : ""}`}>
-
-            <button
-              className="nav-link active"
-              onClick={() => scrollTo("home")}
-            >
-              Home
-            </button>
-
-            <button
-              className="nav-link"
-              onClick={() => scrollTo("features")}
-            >
-              Features
-            </button>
-
-            <button
-              className="nav-link"
-              onClick={() => scrollTo("how-it-works")}
-            >
+          <nav className={`pc-nav-links ${menuOpen ? "pc-menu-open" : ""}`}>
+            <button onClick={() => scrollTo("home")}>Home</button>
+            <button onClick={() => scrollTo("features")}>Features</button>
+            <button onClick={() => scrollTo("how-it-works")}>
               How It Works
             </button>
-
-            <button
-              className="nav-link"
-              onClick={() => scrollTo("about")}
-            >
-              About
-            </button>
-
+            <button onClick={() => scrollTo("about")}>About</button>
+            <button onClick={() => scrollTo("campaigns")}>Campaigns</button>
           </nav>
 
-          <div className="nav-actions">
-            <span className="globe-icon">◎</span>
-
-            <button className="login-button">
+          <div className="pc-nav-actions">
+            <button
+              className="pc-login-button"
+              onClick={() => navigate("/login")}
+            >
               Log In
             </button>
 
             <button
-              className="primary-button small-button"
-              onClick={() => scrollTo("cta")}
+              className="pc-primary-button"
+              onClick={() => navigate("/register")}
             >
               Get Started
             </button>
+
+            <button
+              className="pc-mobile-toggle"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label="Toggle navigation"
+              aria-expanded={menuOpen}
+            >
+              ☰
+            </button>
           </div>
-
-          <button
-            className="menu-button"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            ☰
-          </button>
-
         </div>
       </header>
 
       <main>
-
-        <section className="hero" id="home">
-
-          <div className="hero-background"></div>
-
-          <div className="container hero-container">
-
-            <div className="hero-content">
-
-              <div className="ai-badge">
-                <span className="sparkle">
-                  ✦
-                </span>
-
-                AI-POWERED COMMUNICATION
-              </div>
+        <section className="pc-hero" id="home">
+          <div className="pc-hero-inner">
+            <div className="pc-hero-copy">
+              <span className="pc-eyebrow">
+                ✦ &nbsp; AI-POWERED COMMUNICATION
+              </span>
 
               <h1>
                 Connect Every
                 <br />
-                <span className="gradient-text">
+                <span className="pc-gradient-text">
                   Voice.
-                </span>
-                <br />
-                <span className="gradient-text">
-                  Every Language.
+                  <br />
+                  Every
+                  <br />
+                  Language.
                 </span>
               </h1>
 
-              <p className="hero-description">
-                Create, translate and deliver intelligent
-                public awareness campaigns that reach the
-                right people in the right language at the
-                right time.
+              <p className="pc-hero-description">
+                Create, translate and deliver intelligent public awareness
+                campaigns that reach the right people in the right language
+                at the right time.
               </p>
 
-              <div className="hero-buttons">
-
+              <div className="pc-hero-buttons">
                 <button
-                  className="primary-button hero-button"
-                  onClick={() => scrollTo("cta")}
+                  className="pc-primary-button"
+                  onClick={() => navigate("/register")}
                 >
-                  Start a Campaign
-                  <span>→</span>
+                  Start a Campaign →
                 </button>
 
                 <button
-                  className="secondary-button"
+                  className="pc-secondary-button"
                   onClick={() => scrollTo("features")}
                 >
                   Explore Features
                 </button>
-
               </div>
 
-              <div className="trusted">
-
-                <div className="avatar-group">
-                  <div>👩🏻</div>
-                  <div>👨🏻</div>
-                  <div>👩🏽</div>
-                  <div>👨🏽</div>
-                  <div>+</div>
-                </div>
-
+              <div className="pc-trust-row">
+                <div aria-hidden="true">👩🏻 👨🏽 👩🏽 👨🏻</div>
                 <div>
-                  <strong>
-                    Trusted by government, healthcare
-                  </strong>
-
-                  <span>
-                    and community organizations
-                  </span>
+                  Trusted by government, healthcare
+                  <span>and community organizations</span>
                 </div>
-
               </div>
-
             </div>
 
-            <div className="new-ai-visual">
+            <div
+              className="pc-globe-stage"
+              aria-label="AI multilingual communication globe"
+            >
+              <div className="pc-globe-orbit pc-orbit-one" />
+              <div className="pc-globe-orbit pc-orbit-two" />
+              <div className="pc-globe-orbit pc-orbit-three" />
 
-              <div className="ai-atmosphere"></div>
-
-              <div className="ai-ring ring1"></div>
-              <div className="ai-ring ring2"></div>
-              <div className="ai-ring ring3"></div>
-
-              <div className="ai-world">
-
-                <div className="world-dots"></div>
-
-                <div className="globe-line one"></div>
-                <div className="globe-line two"></div>
-                <div className="globe-line three"></div>
-
-                <div className="globe-light"></div>
-
-                <div className="globe-point point1"></div>
-                <div className="globe-point point2"></div>
-                <div className="globe-point point3"></div>
-
-                <div className="ai-center">
-
-                  <div className="ai-star">
-                    ✦
-                  </div>
-
-                  <strong>
-                    AI
-                  </strong>
-
-                  <span>
-                    PUBLIC
-                    <br />
-                    CONNECT
-                  </span>
-
+              <div className="pc-globe">
+                <div className="pc-globe-center">
+                  <span>✦</span>
+                  <strong>AI</strong>
+                  <small>PUBLIC<br />CONNECT</small>
                 </div>
-
               </div>
 
               {languages.map((language, index) => (
                 <div
                   key={language.name}
-                  className={`new-language-card ${
-                    language.position
-                  } ${
-                    index === activeLanguage
-                      ? "active"
-                      : ""
-                  }`}
+                  className={`pc-language-card pc-lang-${index}`}
+                  style={{
+                    borderColor:
+                      activeLanguage === index ? "#cbd7ff" : "#e2e9fa",
+                  }}
                 >
-
-                  <div className="new-flag">
-                    {language.flag}
+                  <span>🌐</span>
+                  <div>
+                    <strong>{language.native}</strong>
+                    <small>{language.name}</small>
                   </div>
-
-                  <div className="new-language-text">
-
-                    <strong>
-                      {language.text}
-                    </strong>
-
-                    <small>
-                      {language.name}
-                    </small>
-
-                  </div>
-
                 </div>
               ))}
-
-              <div className="signal-left">
-                ))))
-              </div>
-
-              <div className="signal-right">
-                ((((
-              </div>
-
             </div>
-
           </div>
         </section>
 
-        <section className="impact-section">
-
-          <div className="container">
-
-            <div className="impact-card">
-
-              <div className="impact-title">
-                Designed for
-                <br />
-                <strong>
-                  Public Impact
-                </strong>
-              </div>
-
-              <div className="impact-items">
-
-                {impactItems.map((item) => (
-
-                  <div
-                    className="impact-item"
-                    key={item.title}
-                  >
-
-                    <div
-                      className={`impact-icon ${item.color}`}
-                    >
-                      {item.icon}
-                    </div>
-
-                    <div>
-                      <strong>
-                        {item.title}
-                      </strong>
-
-                      <span>
-                        {item.text}
-                      </span>
-                    </div>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-        <section
-          className="content-section"
-          id="features"
-        >
-
-          <div className="container">
-
-            <div className="section-heading">
-
-              <span className="section-label">
-                POWERED BY INTELLIGENCE
-              </span>
-
-              <h2>
-                Why AI PublicConnect?
-              </h2>
-
-              <p>
-                Powerful features to make your message
-                reach further, in every language and on
-                every channel.
-              </p>
-
-            </div>
-
-            <div className="feature-grid">
-
-              {features.map((feature) => (
-
-                <article
-                  className="feature-card"
-                  key={feature.title}
+        <div className="pc-impact-wrap">
+          <div className="pc-impact-strip">
+            {[
+              { icon: "♥", title: "Health", text: "Better health", color: "#ffeaf2" },
+              { icon: "🎓", title: "Education", text: "Knowledge", color: "#eaf1ff" },
+              { icon: "✓", title: "Safety", text: "Safer communities", color: "#e3f9ef" },
+              { icon: "▥", title: "Government", text: "Transparency", color: "#f0eaff" },
+              { icon: "👥", title: "Community", text: "Stronger together", color: "#fff0dc" },
+            ].map((impact) => (
+              <div className="pc-impact-item" key={impact.title}>
+                <span
+                  className="pc-impact-icon"
+                  style={{ background: impact.color }}
                 >
-
-                  <div className="feature-icon">
-                    {feature.icon}
-                  </div>
-
-                  <h3>
-                    {feature.title}
-                  </h3>
-
-                  <p>
-                    {feature.text}
-                  </p>
-
-                  <div className="card-arrow">
-                    →
-                  </div>
-
-                </article>
-
-              ))}
-
-            </div>
-
+                  {impact.icon}
+                </span>
+                <div>
+                  <strong>{impact.title}</strong>
+                  <small>{impact.text}</small>
+                </div>
+              </div>
+            ))}
           </div>
-
-        </section>
-
-        <section
-          className="how-section"
-          id="how-it-works"
-        >
-
-          <div className="container">
-
-            <div className="how-header">
-
-              <div>
-
-                <span className="section-label">
-                  SIMPLE WORKFLOW
-                </span>
-
-                <h2>
-                  How It Works
-                </h2>
-
-                <p>
-                  From idea to impact — in just a few
-                  simple steps.
-                </p>
-
-              </div>
-
-              <div className="live-pill">
-
-                <span></span>
-
-                AI SYSTEM ONLINE
-
-              </div>
-
-            </div>
-
-            <div className="steps">
-
-              {steps.map((step, index) => (
-
-                <React.Fragment key={step.number}>
-
-                  <div className="step">
-
-                    <div className="step-icon">
-                      {step.icon}
-                    </div>
-
-                    <span className="step-number">
-                      {step.number}
-                    </span>
-
-                    <h3>
-                      {step.title}
-                    </h3>
-
-                    <p>
-                      {step.text}
-                    </p>
-
-                  </div>
-
-                  {index < steps.length - 1 && (
-
-                    <div className="step-arrow">
-                      →
-                    </div>
-
-                  )}
-
-                </React.Fragment>
-
-              ))}
-
-            </div>
-
-            <div className="campaign-preview">
-
-              <div className="preview-spark">
-                ✦
-              </div>
-
-              <div>
-
-                <strong>
-                  {campaigns.length > 0
-                    ? campaigns[0].name
-                    : "AI Campaign Preview"}
-                </strong>
-
-                <span>
-                  {campaigns.length > 0
-                    ? campaigns[0].description ||
-                      campaigns[0].objective ||
-                      "Campaign loaded from AI PublicConnect backend."
-                    : "Loading campaigns from AI PublicConnect backend..."}
-                </span>
-
-              </div>
-
-              <button
-                onClick={() => {
-                  if (campaigns.length > 0) {
-                    console.log(
-                      "Campaign selected:",
-                      campaigns[0]
-                    );
-                  }
-                }}
-              >
-                →
-              </button>
-
-            </div>
-
-          </div>
-
-        </section>
-
-        <section
-          className="about-section"
-          id="about"
-        >
-
-          <div className="container about-container">
-
-            <div>
-
-              <span className="section-label">
-                BUILT FOR COMMUNITIES
-              </span>
-
-              <h2>
-                One message.
-                <br />
-                <span className="gradient-text">
-                  Millions of voices.
-                </span>
-              </h2>
-
-            </div>
-
-            <p>
-              AI PublicConnect helps organizations
-              create meaningful public-awareness
-              campaigns and deliver them across
-              languages and communication channels.
-            </p>
-
-          </div>
-
-        </section>
-
-        <section
-          className="cta-section"
-          id="cta"
-        >
-
-          <div className="cta-glow"></div>
-
-          <div className="container cta-container">
-
-            <div className="cta-content">
-
-              <span className="section-label">
-                READY TO MAKE AN IMPACT?
-              </span>
-
-              <h2>
-                Turn messages into
-                <br />
-                <span>
-                  public impact.
-                </span>
-              </h2>
-
-              <p>
-                Inform · Engage · Build a healthier,
-                safer and stronger society.
-              </p>
-
-              <button className="primary-button cta-button">
-                Get Started
-                <span>
-                  →
-                </span>
-              </button>
-
-            </div>
-
-            <div className="cta-stats">
-
-              <div>
-                <strong>
-                  100+
-                </strong>
-
-                <span>
-                  Languages
-                </span>
-              </div>
-
-              <div>
-                <strong>
-                  24/7
-                </strong>
-
-                <span>
-                  Communication
-                </span>
-              </div>
-
-              <div>
-                <strong>
-                  AI
-                </strong>
-
-                <span>
-                  Powered
-                </span>
-              </div>
-
-              <div>
-                <strong>
-                  ∞
-                </strong>
-
-                <span>
-                  Possibilities
-                </span>
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-      </main>
-
-      <footer className="footer">
-
-        <div className="container footer-container">
-
-          <div className="footer-brand">
-
-            <div className="brand">
-
-              <div className="brand-icon">
-
-                <span></span>
-                <span></span>
-                <span></span>
-
-              </div>
-
-              <div className="brand-text">
-
-                <span className="brand-ai">
-                  AI
-                </span>
-
-                <span>
-                  PublicConnect
-                </span>
-
-              </div>
-
-            </div>
-
-            <p>
-              Intelligent communication for
-              stronger communities.
-            </p>
-
-          </div>
-
-          <div className="footer-links">
-
-            <span>
-              © 2026 AI PublicConnect
-            </span>
-
-            <span>
-              Privacy
-            </span>
-
-            <span>
-              Terms
-            </span>
-
-          </div>
-
         </div>
 
-      </footer>
+        <section className="pc-section" id="features">
+          <div className="pc-section-inner">
+            <div className="pc-section-eyebrow">PLATFORM FEATURES</div>
+            <h2 className="pc-section-title">
+              Communication that makes an impact
+            </h2>
+            <p className="pc-section-description">
+              Everything your team needs to share useful public information
+              with communities in a language they understand.
+            </p>
 
+            <div className="pc-feature-grid">
+              {features.map((feature) => (
+                <article className="pc-feature-card" key={feature.title}>
+                  <div className="pc-feature-icon">{feature.icon}</div>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="pc-section pc-steps-section" id="how-it-works">
+          <div className="pc-section-inner">
+            <div className="pc-section-eyebrow">HOW IT WORKS</div>
+            <h2 className="pc-section-title">
+              From message to community impact
+            </h2>
+            <p className="pc-section-description">
+              A simple workflow to help your team prepare and deliver
+              multilingual public awareness campaigns.
+            </p>
+
+            <div className="pc-steps-grid">
+              <article className="pc-step-card">
+                <div className="pc-step-number">01</div>
+                <h3>Create your campaign</h3>
+                <p>
+                  Prepare the key information and choose the audience for
+                  your message.
+                </p>
+              </article>
+
+              <article className="pc-step-card">
+                <div className="pc-step-number">02</div>
+                <h3>Reach more languages</h3>
+                <p>
+                  Prepare accessible messaging for communities speaking
+                  different languages.
+                </p>
+              </article>
+
+              <article className="pc-step-card">
+                <div className="pc-step-number">03</div>
+                <h3>Deliver your message</h3>
+                <p>
+                  Coordinate campaign communication and support informed
+                  communities.
+                </p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section className="pc-section" id="campaigns">
+          <div className="pc-section-inner">
+            <div className="pc-section-eyebrow">CAMPAIGNS</div>
+            <h2 className="pc-section-title">
+              Public awareness campaigns
+            </h2>
+            <p className="pc-section-description">
+              Organize your awareness work and help important information
+              reach the communities that need it.
+            </p>
+
+            <div className="pc-campaign-status">
+              {campaigns.length > 0
+                ? `${campaigns.length} campaign${campaigns.length === 1 ? "" : "s"} available.`
+                : "Ready to start your first awareness campaign?"}
+            </div>
+          </div>
+        </section>
+
+        <section className="pc-section" id="about">
+          <div className="pc-section-inner">
+            <div className="pc-section-eyebrow">
+              ABOUT PUBLICCONNECT
+            </div>
+            <h2 className="pc-section-title">
+              Every voice deserves to be heard
+            </h2>
+            <p className="pc-section-description">
+              AI PublicConnect is designed to make public awareness
+              communication more accessible, multilingual, and community
+              focused. Our goal is to help important information connect
+              with people in a meaningful way.
+            </p>
+          </div>
+        </section>
+
+        <section className="pc-cta">
+          <h2>Ready to make a difference?</h2>
+          <p>
+            Join AI PublicConnect and help make important public awareness
+            information accessible to everyone.
+          </p>
+          <button
+            className="pc-primary-button"
+            onClick={() => navigate("/register")}
+          >
+            Get Started →
+          </button>
+        </section>
+      </main>
+
+      <footer className="pc-footer">
+        © {new Date().getFullYear()} AI PublicConnect · Connecting
+        communities through language.
+      </footer>
     </div>
   );
 }
-
-export default App;

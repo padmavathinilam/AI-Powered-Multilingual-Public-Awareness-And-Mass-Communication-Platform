@@ -1,0 +1,1247 @@
+/* =========================================
+   AI PublicConnect — Authentication Styles
+   Login + Registration
+   ========================================= */
+
+/* Global reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172554;
+}
+
+/* =========================================
+   Authentication page layout
+   ========================================= */
+
+.auth-page {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 100px);
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 48px clamp(24px, 4vw, 64px);
+  overflow-x: clip;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff, #ecfeff);
+}
+
+.auth-intro,
+.auth-form-side {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-intro {
+  position: relative;
+}
+
+.auth-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================
+   Left-side introduction
+   ========================================= */
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  padding: 11px 17px;
+  border: 1px solid #d8d7ff;
+  border-radius: 30px;
+  background: #f0efff;
+  color: #5145ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.auth-intro h1 {
+  margin: 0 0 24px;
+  color: #111d42;
+  font-size: clamp(42px, 4.1vw, 68px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -2.5px;
+}
+
+.auth-intro h1 span {
+  color: #5961ff;
+  background: linear-gradient(100deg, #397bff, #7738f5);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-description {
+  max-width: 570px;
+  margin: 0 0 30px;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+/* =========================================
+   Benefits
+   ========================================= */
+
+.auth-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.benefit {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.benefit-icon {
+  display: flex;
+  flex: 0 0 50px;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: #eeedff;
+  color: #684cff;
+  font-size: 20px;
+}
+
+.benefit strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #111d42;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.benefit p {
+  margin: 0;
+  color: #71809d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   Language chips
+   ========================================= */
+
+.auth-languages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.language-chip {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid #dce3f5;
+  border-radius: 24px;
+  background: #ffffff;
+  color: #52617f;
+  font-size: 13px;
+  line-height: 1.3;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.03);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.language-chip.language-active {
+  border-color: #aaa6ff;
+  background: #f0efff;
+  color: #5145e8;
+}
+
+/* =========================================
+   AI multilingual globe
+   Single circle, one language label
+   ========================================= */
+
+.auth-intro .auth-globe {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 110px;
+  width: 110px;
+  height: 110px;
+  min-width: 110px;
+  margin: 54px 0 20px 12px;
+  padding: 0;
+  overflow: visible;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 25%,
+    #65c7ff 0%,
+    #4778ff 46%,
+    #7040f5 100%
+  );
+  box-shadow:
+    0 0 0 10px rgba(99, 102, 241, 0.06),
+    0 14px 30px rgba(91, 78, 245, 0.2);
+  animation: none;
+}
+
+/* Do not generate additional decorative circles */
+.auth-intro .auth-globe::before,
+.auth-intro .auth-globe::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Globe text */
+.auth-intro .auth-globe-center {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #ffffff;
+  text-align: center;
+  transform: none;
+}
+
+.auth-intro .auth-globe-center strong {
+  display: block;
+  margin: 0;
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.auth-intro .auth-globe-center span {
+  display: block;
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Hide legacy orbit elements if any remain */
+.auth-intro .auth-globe .auth-globe-orbit {
+  display: none !important;
+}
+
+/* Language label sits above the globe */
+.auth-intro .auth-globe-language {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 0;
+  max-width: 160px;
+  margin: 0;
+  padding: 7px 12px;
+  transform: translateX(-50%);
+  border: 1px solid #dfe5f4;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #5145e8;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(30, 41, 59, 0.08);
+  pointer-events: none;
+}
+
+/* =========================================
+   Login and registration cards
+   ========================================= */
+
+.auth-card {
+  display: block;
+  flex: 0 1 560px;
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 36px;
+  border: 1px solid #e0e7f5;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(30, 41, 59, 0.07);
+}
+
+.auth-card.login-card {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-eyebrow {
+  margin-bottom: 18px;
+  color: #5145ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.auth-card h2 {
+  margin: 0 0 14px;
+  color: #111d42;
+  font-size: clamp(25px, 2.2vw, 34px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+}
+
+.form-subtitle {
+  margin: 0 0 30px;
+  color: #71809d;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   Forms and fields
+   ========================================= */
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+}
+
+.form-field,
+.form-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.form-field label,
+.form-group label {
+  display: block;
+  margin-bottom: 9px;
+  color: #172554;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.form-field input,
+.form-group input,
+.form-group select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid #d6e0f4;
+  border-radius: 12px;
+  outline: none;
+  background: #eaf1ff;
+  color: #111827;
+  font-family: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.form-group input,
+.form-group select {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  border-radius: 9px;
+}
+
+.form-field input::placeholder,
+.form-group input::placeholder {
+  color: #94a3b8;
+}
+
+.form-field input:focus,
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #7166ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* =========================================
+   Show password
+   ========================================= */
+
+.show-password {
+  align-self: flex-start;
+  margin: 8px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #5145ff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.show-password:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   Primary submit buttons
+   ========================================= */
+
+.auth-submit,
+.auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin: 4px 0 0;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #397bff, #7837f5);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 25px rgba(94, 78, 245, 0.18);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auth-submit:hover,
+.auth-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 28px rgba(94, 78, 245, 0.24);
+}
+
+.auth-submit:disabled,
+.auth-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* =========================================
+   Login and registration links
+   ========================================= */
+
+.auth-switch,
+.auth-footer {
+  margin: 26px 0 0;
+  color: #71809d;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.auth-switch a,
+.auth-footer a {
+  color: #5145ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-switch a:hover,
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-card-footer {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid #edf0f7;
+  color: #9aa7bf;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* =========================================
+   Error and success messages
+   ========================================= */
+
+.auth-message,
+.auth-error,
+.auth-success {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.auth-message.error,
+.auth-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.auth-message.success,
+.auth-success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+/* =========================================
+   Registration header
+   ========================================= */
+
+.auth-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.auth-header h1 {
+  margin: 0 0 14px;
+  color: #172554;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.auth-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   Password strength indicator
+   ========================================= */
+
+.password-strength {
+  margin-top: 10px;
+}
+
+.password-strength-track {
+  width: 100%;
+  height: 6px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #e5e7eb;
+}
+
+.password-strength-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.25s ease;
+}
+
+.strength-0 {
+  background: #9ca3af;
+}
+
+.strength-1 {
+  background: #ef4444;
+}
+
+.strength-2 {
+  background: #f97316;
+}
+
+.strength-3 {
+  background: #eab308;
+}
+
+.strength-4 {
+  background: #84cc16;
+}
+
+.strength-5 {
+  background: #22c55e;
+}
+
+.password-match {
+  display: block;
+  margin-top: 6px;
+  color: #16a34a !important;
+}
+
+.password-mismatch {
+  display: block;
+  margin-top: 6px;
+  color: #dc2626 !important;
+}
+
+/* =========================================
+   Loading spinner
+   ========================================= */
+
+.loading-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: auth-spin 0.7s linear infinite;
+}
+
+@keyframes auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   Tablet layout
+   ========================================= */
+
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 42px;
+    padding: 32px 24px;
+  }
+
+  .auth-intro {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .auth-form-side {
+    width: 100%;
+  }
+
+  .auth-card.login-card {
+    max-width: 560px;
+  }
+
+  .auth-intro .auth-globe {
+    margin: 54px auto 24px;
+  }
+}
+
+/* =========================================
+   Mobile layout
+   ========================================= */
+
+@media (max-width: 600px) {
+  .auth-page {
+    gap: 32px;
+    padding: 24px 16px;
+  }
+
+  .auth-intro h1 {
+    font-size: clamp(38px, 9vw, 52px);
+    letter-spacing: -1.6px;
+  }
+
+  .auth-description {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .auth-card {
+    flex-basis: 100%;
+    padding: 26px 20px;
+    border-radius: 18px;
+  }
+
+  .auth-card.login-card {
+    padding: 26px 20px;
+  }
+
+  .auth-card h2 {
+    font-size: 26px;
+  }
+
+  .auth-languages {
+    gap: 7px;
+  }
+
+  .language-chip {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .auth-intro .auth-globe {
+    width: 100px;
+    height: 100px;
+    min-width: 100px;
+    flex-basis: 100px;
+    margin: 54px auto 24px;
+  }
+
+  .auth-intro .auth-globe-center strong {
+    font-size: 30px;
+  }
+}
+
+/* Reduce motion when requested by the user */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Fix language chip spacing */
+.auth-intro .auth-languages {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 26px !important;
+}
+
+.auth-intro .language-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  border: 1px solid #dce3f5 !important;
+  border-radius: 24px !important;
+  background: #ffffff !important;
+  color: #52617f !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+}
+
+.auth-intro .language-chip.language-active {
+  border-color: #aaa6ff !important;
+  background: #f0efff !important;
+  color: #5145e8 !important;
+}
+
+/* Fix AI globe text */
+.auth-intro .auth-globe-center {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  text-align: center !important;
+}
+
+.auth-intro .auth-globe-center strong {
+  display: block !important;
+  margin: 0 !important;
+  font-size: 34px !important;
+  line-height: 1.1 !important;
+}
+
+.auth-intro .auth-globe-center span {
+  display: block !important;
+  margin: 0 !important;
+  font-size: 7px !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0.8px !important;
+  white-space: nowrap !important;
+}
+
+/* Fix overlapping language labels above the globe */
+.auth-intro .auth-globe {
+  margin-top: 80px !important;
+}
+
+/* Keep the globe language label above the circle */
+.auth-intro .auth-globe-language {
+  top: -42px !important;
+  left: 50% !important;
+  z-index: 10 !important;
+  transform: translateX(-50%) !important;
+  width: max-content !important;
+  min-width: 0 !important;
+  max-width: 150px !important;
+  padding: 7px 12px !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+
+/* Prevent language chips from overlapping each other */
+.auth-intro .auth-languages {
+  position: relative !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Mobile spacing */
+@media (max-width: 900px) {
+  .auth-intro .auth-globe {
+    margin-top: 80px !important;
+  }
+}
+
+/* TEST: this should visibly change the globe scene */
+.login-globe-scene {
+  position: relative !important;
+  display: block !important;
+  width: 540px !important;
+  max-width: 100% !important;
+  height: 350px !important;
+  margin: 30px auto !important;
+  background: rgba(100, 120, 255, 0.08) !important;
+  outline: 2px solid #6366f1 !important;
+}
+
+.login-floating-language {
+  position: absolute !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px !important;
+  background: white !important;
+  border: 1px solid #dbe3ff !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 25px #6366f133 !important;
+}
+
+.login-language-text {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.login-language-text strong {
+  color: #17336b !important;
+  font-size: 14px !important;
+}
+
+.login-language-text small {
+  color: #8b9aba !important;
+  font-size: 10px !important;
+}
+
+/* ===== FINAL FIX: LOGIN AI GLOBE ===== */
+
+.login-globe-scene {
+  position: relative !important;
+  display: block !important;
+  width: min(100%, 540px) !important;
+  height: 370px !important;
+  margin: 30px auto 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  outline: none !important;
+  background: transparent !important;
+  isolation: isolate;
+}
+
+/* Glowing orbit rings */
+.login-globe-orbit {
+  position: absolute !important;
+  top: 48% !important;
+  left: 50% !important;
+  display: block !important;
+  border: 1px solid rgba(99, 102, 241, 0.24) !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+
+.login-orbit-outer {
+  width: 320px !important;
+  height: 320px !important;
+  animation: login-ring-pulse 4s ease-in-out infinite !important;
+}
+
+.login-orbit-middle {
+  width: 270px !important;
+  height: 270px !important;
+  animation: login-ring-pulse 4s ease-in-out -1s infinite !important;
+}
+
+.login-orbit-inner {
+  width: 220px !important;
+  height: 220px !important;
+  animation: login-ring-pulse 4s ease-in-out -2s infinite !important;
+}
+
+/* Sphere glow */
+.login-globe-halo {
+  position: absolute !important;
+  top: 48% !important;
+  left: 50% !important;
+  display: block !important;
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 50% !important;
+  background: rgba(59, 130, 246, 0.3) !important;
+  filter: blur(30px) !important;
+  transform: translate(-50%, -50%) !important;
+  animation: login-halo-pulse 3s ease-in-out infinite !important;
+}
+
+/* Blue AI sphere */
+.login-globe-sphere {
+  position: absolute !important;
+  top: 48% !important;
+  left: 50% !important;
+  z-index: 2 !important;
+  display: block !important;
+  width: 176px !important;
+  height: 176px !important;
+  min-width: 176px !important;
+  min-height: 176px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 2px solid #7dd3fc !important;
+  border-radius: 50% !important;
+  background: radial-gradient(
+    circle at 28% 20%,
+    #78e2ff 0%,
+    #36a9ed 25%,
+    #2467d5 55%,
+    #092c82 100%
+  ) !important;
+  box-shadow:
+    inset -18px -18px 35px rgba(0, 18, 80, 0.4),
+    0 0 30px rgba(56, 161, 255, 0.4) !important;
+  transform: translate(-50%, -50%) !important;
+  animation: login-sphere-float 4s ease-in-out infinite !important;
+}
+
+.login-globe-shine {
+  position: absolute !important;
+  top: 8% !important;
+  left: 10% !important;
+  width: 60px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  filter: blur(15px) !important;
+}
+
+.login-globe-core {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 82% !important;
+  height: 82% !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 50% !important;
+  background: rgba(31, 78, 190, 0.65) !important;
+  color: #fff !important;
+  text-align: center !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.login-globe-sparkle {
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: white !important;
+  font-size: 15px !important;
+}
+
+.login-globe-core strong {
+  display: block !important;
+  margin: 0 !important;
+  color: white !important;
+  font-size: 38px !important;
+  line-height: 1.1 !important;
+}
+
+.login-globe-brand {
+  display: block !important;
+  margin-top: 7px !important;
+  color: white !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 1.4px !important;
+}
+
+/* Language cards */
+.login-floating-language {
+  position: absolute !important;
+  z-index: 5 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 9px !important;
+  width: max-content !important;
+  min-width: 112px !important;
+  min-height: 58px !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e0e7ff !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+  box-shadow: 0 10px 28px rgba(54, 75, 145, 0.14) !important;
+  white-space: nowrap !important;
+  animation: login-card-float 4s ease-in-out infinite !important;
+  animation-delay: var(--float-delay, 0s) !important;
+}
+
+.login-language-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 20px !important;
+  color: #26a8f7 !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+
+.login-language-text {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 3px !important;
+}
+
+.login-language-text strong {
+  display: block !important;
+  margin: 0 !important;
+  color: #17336b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+
+.login-language-text small {
+  display: block !important;
+  margin: 0 !important;
+  color: #8b9aba !important;
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+}
+
+/* Place each card around the sphere */
+.float-hindi {
+  top: 8% !important;
+  left: 4% !important;
+}
+
+.float-telugu {
+  top: 10% !important;
+  right: 1% !important;
+}
+
+.float-tamil {
+  top: 40% !important;
+  left: 0 !important;
+}
+
+.float-kannada {
+  top: 42% !important;
+  right: 0 !important;
+}
+
+.float-malayalam {
+  bottom: 6% !important;
+  left: 4% !important;
+}
+
+.float-marathi {
+  right: 2% !important;
+  bottom: 5% !important;
+}
+
+/* Keep language chips separate from the globe */
+.auth-languages {
+  position: relative !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 0 !important;
+}
+
+.auth-languages .language-chip {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 7px 12px !important;
+  border: 1px solid #dce4f8 !important;
+  border-radius: 24px !important;
+  background: #fff !important;
+}
+
+/* Animations */
+@keyframes login-sphere-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-8px);
+  }
+}
+
+@keyframes login-card-float {
+  0%, 100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes login-ring-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes login-halo-pulse {
+  0%, 100% {
+    opacity: 0.65;
+    scale: 0.92;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .login-globe-scene {
+    max-width: 540px !important;
+    margin-top: 30px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-globe-scene {
+    width: 100% !important;
+    height: 300px !important;
+  }
+
+  .login-globe-sphere {
+    width: 140px !important;
+    height: 140px !important;
+    min-width: 140px !important;
+    min-height: 140px !important;
+  }
+
+  .login-orbit-outer {
+    width: 260px !important;
+    height: 260px !important;
+  }
+
+  .login-orbit-middle {
+    width: 220px !important;
+    height: 220px !important;
+  }
+
+  .login-orbit-inner {
+    width: 185px !important;
+    height: 185px !important;
+  }
+
+  .login-floating-language {
+    min-width: 0 !important;
+    min-height: 44px !important;
+    gap: 5px !important;
+    padding: 7px !important;
+  }
+
+  .login-language-text strong {
+    font-size: 10px !important;
+  }
+
+  .login-language-text small {
+    font-size: 9px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-globe-sphere,
+  .login-globe-orbit,
+  .login-globe-halo,
+  .login-floating-language {
+    animation: none !important;
+  }
+}

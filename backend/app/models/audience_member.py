@@ -1,3 +1,4 @@
+
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, String
@@ -9,16 +10,27 @@ class AudienceMember(Base):
     __tablename__ = "audience_members"
 
     id = Column(Integer, primary_key=True, index=True)
+
     name = Column(String(150), nullable=False)
-    email = Column(String(150), nullable=True)
-    phone = Column(String(20), nullable=True)
+    email = Column(String(150), nullable=True, index=True)
+    phone = Column(String(20), nullable=True, index=True)
+
     age = Column(Integer, nullable=True)
     gender = Column(String(20), nullable=True)
-    city = Column(String(100), nullable=True)
+
+    city = Column(String(100), nullable=True, index=True)
     state = Column(String(100), nullable=True)
-    preferred_language = Column(String(50), nullable=True)
+
+    preferred_language = Column(
+        String(50), nullable=True, index=True
+    )
+    occupation = Column(String(100), nullable=True)
+    organization_department = Column(String(150), nullable=True)
+    preferred_channel = Column(String(50), nullable=True)
+    consent_status = Column(
+        String(20), nullable=False, default="Pending"
+    )
 
     created_at = Column(
-        DateTime,
-        default=datetime.utcnow
+        DateTime, default=datetime.utcnow, nullable=False
     )

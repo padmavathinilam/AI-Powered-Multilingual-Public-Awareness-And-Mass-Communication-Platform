@@ -1757,3 +1757,734 @@ button {
     flex-direction: column;
   }
 }
+
+/* AI PublicConnect — consistent light theme */
+
+:root {
+  color-scheme: light;
+  --pc-bg: #f7f9ff;
+  --pc-surface: #ffffff;
+  --pc-text: #111b3a;
+  --pc-muted: #687796;
+  --pc-primary: #3979ff;
+  --pc-purple: #733df2;
+  --pc-border: #dfe5f4;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--pc-bg);
+  color: var(--pc-text);
+  font-family: "DM Sans", Arial, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--pc-bg);
+  color: var(--pc-text);
+}
+
+.app button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.app .navbar,
+.app nav {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--pc-text);
+  border-bottom: 1px solid #e7ebf5;
+}
+
+.app .login-button {
+  background: #ffffff;
+  color: var(--pc-text);
+  border: 1px solid #d6def0;
+  border-radius: 12px;
+}
+
+.app .primary-button {
+  background: linear-gradient(100deg, var(--pc-primary), var(--pc-purple));
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(103, 76, 243, 0.2);
+}
+
+.app .secondary-button,
+.app .outline-button {
+  background: #ffffff;
+  color: var(--pc-text);
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+}
+
+.app .hero,
+.app .hero-section,
+.app .impact-strip,
+.app .features-section,
+.app .how-it-works-section,
+.app .about-section,
+.app .cta-section {
+  color: var(--pc-text);
+}
+
+.app .hero,
+.app .hero-section {
+  background:
+    radial-gradient(ellipse at 78% 35%, rgba(112, 103, 255, 0.13), transparent 38%),
+    linear-gradient(115deg, #f0f5ff, #ffffff 48%, #eef0ff);
+}
+
+.app .impact-strip,
+.app .feature-card,
+.app .step-card {
+  background: #ffffff;
+  color: var(--pc-text);
+  border: 1px solid #e5eaf6;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(35, 55, 100, 0.05);
+}
+
+.app p {
+  color: var(--pc-muted);
+}
+
+.app h1,
+.app h2,
+.app h3,
+.app strong {
+  color: var(--pc-text);
+}
+
+.app footer {
+  background: #ffffff;
+  color: var(--pc-muted);
+  border-top: 1px solid #e7ebf5;
+}
+
+@media (max-width: 768px) {
+  .app .navbar,
+  .app nav {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+.messages-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f4f7fb;
+  color: #172033;
+  font-family: Arial, sans-serif;
+}
+
+.messages-header,
+.messages-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.messages-header {
+  margin-bottom: 28px;
+}
+
+.messages-header h1 {
+  margin: 8px 0;
+  font-size: clamp(25px, 3vw, 34px);
+}
+
+.messages-header p,
+.messages-help {
+  color: #68758b;
+  line-height: 1.6;
+}
+
+.messages-eyebrow {
+  color: #4f46e5 !important;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.messages-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 24px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.messages-card h2 {
+  margin-top: 0;
+}
+
+.messages-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.messages-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.messages-form-grid label span {
+  color: #dc2626;
+}
+
+.messages-form-grid input,
+.messages-form-grid select,
+.messages-form-grid textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d4dce8;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-weight: 400;
+}
+
+.messages-form-grid input:focus,
+.messages-form-grid select:focus,
+.messages-form-grid textarea:focus {
+  outline: 2px solid #a5b4fc;
+  border-color: #6366f1;
+}
+
+.messages-full-width {
+  grid-column: 1 / -1;
+}
+
+.messages-submit,
+.messages-refresh {
+  border: none;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.messages-submit {
+  margin-top: 22px;
+  background: #4f46e5;
+  color: #fff;
+}
+
+.messages-refresh {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.messages-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.messages-alert {
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+
+.messages-alert.error {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.messages-alert.success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.messages-count {
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.messages-table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.messages-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.messages-table th,
+.messages-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e8edf4;
+  vertical-align: top;
+}
+
+.messages-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+}
+
+.messages-table td {
+  font-size: 14px;
+}
+
+.messages-content-cell {
+  min-width: 220px;
+  max-width: 360px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.messages-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .messages-page {
+    padding: 16px;
+  }
+
+  .messages-card {
+    padding: 18px;
+  }
+
+  .messages-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .messages-full-width {
+    grid-column: auto;
+  }
+}
+/* Audience table: dark and readable text */
+.audience-table {
+  color: #111827;
+  background-color: #ffffff;
+}
+
+.audience-table th {
+  color: #111827;
+  background-color: #f1f5f9;
+  font-weight: 700;
+}
+
+.audience-table td {
+  color: #111827;
+}
+
+.audience-table td strong,
+.audience-table td span,
+.audience-table td p {
+  color: #111827;
+}
+
+.audience-table input,
+.audience-table select {
+  color: #111827;
+  background-color: #ffffff;
+}
+
+/* Fix registration and login page centering */
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+.auth-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 560px;
+  flex: 0 1 560px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .auth-page {
+    align-items: flex-start;
+    padding: 20px 12px;
+  }
+
+  .auth-card {
+    flex-basis: 100%;
+  }
+}
+
+/* ===== ANIMATED LANDING PAGE AI GLOBE ===== */
+
+.hero-globe {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  height: 480px;
+  margin: 0 auto;
+  isolation: isolate;
+}
+
+.hero-globe-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hero-globe-ring.ring-one {
+  width: 420px;
+  height: 420px;
+  animation: hero-ring-pulse 5s ease-in-out infinite;
+}
+
+.hero-globe-ring.ring-two {
+  width: 350px;
+  height: 350px;
+  animation: hero-ring-pulse 5s ease-in-out -1.5s infinite;
+}
+
+.hero-globe-ring.ring-three {
+  width: 280px;
+  height: 280px;
+  animation: hero-ring-pulse 4s ease-in-out -2s infinite;
+}
+
+.hero-globe-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.3);
+  filter: blur(38px);
+  transform: translate(-50%, -50%);
+  animation: hero-halo-glow 4s ease-in-out infinite;
+}
+
+.hero-globe-sphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 230px;
+  height: 230px;
+  border: 2px solid rgba(125, 225, 255, 0.8);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 28% 20%,
+    #78e2ff 0%,
+    #36a9ed 24%,
+    #2467d5 54%,
+    #092c82 100%
+  );
+  box-shadow:
+    inset -20px -20px 40px rgba(0, 18, 80, 0.45),
+    inset 8px 8px 25px rgba(255, 255, 255, 0.2),
+    0 0 45px rgba(56, 161, 255, 0.4);
+  transform: translate(-50%, -50%);
+  animation: hero-sphere-float 5s ease-in-out infinite;
+}
+
+.hero-globe-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64%;
+  height: 64%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: rgba(31, 78, 190, 0.7);
+  color: white;
+  text-align: center;
+}
+
+.hero-globe-core strong {
+  color: white;
+  font-size: 44px;
+  line-height: 1.1;
+}
+
+.hero-globe-core span {
+  margin-top: 8px;
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 2px;
+}
+
+.hero-language-card {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border: 1px solid #e0e7ff;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 30px rgba(54, 75, 145, 0.12);
+  animation: hero-card-float 4s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  white-space: nowrap;
+}
+
+.hero-language-card .globe-icon {
+  color: #26a8f7;
+  font-size: 20px;
+}
+
+.hero-language-card .language-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hero-language-card strong {
+  color: #17336b;
+  font-size: 14px;
+}
+
+.hero-language-card small {
+  color: #8b9aba;
+  font-size: 10px;
+}
+
+.hero-language-hindi {
+  top: 6%;
+  left: 0;
+}
+
+.hero-language-telugu {
+  top: 9%;
+  right: 0;
+}
+
+.hero-language-tamil {
+  top: 40%;
+  left: -4%;
+}
+
+.hero-language-kannada {
+  top: 43%;
+  right: -4%;
+}
+
+.hero-language-malayalam {
+  bottom: 6%;
+  left: 1%;
+}
+
+.hero-language-marathi {
+  right: 1%;
+  bottom: 5%;
+}
+
+@keyframes hero-sphere-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-12px);
+  }
+}
+
+@keyframes hero-card-float {
+  0%, 100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -9px;
+  }
+}
+
+@keyframes hero-ring-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-halo-glow {
+  0%, 100% {
+    opacity: 0.6;
+    scale: 0.92;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-globe {
+    height: 360px;
+    transform: scale(0.82);
+    transform-origin: top center;
+    width: 120%;
+    margin-left: -10%;
+    margin-bottom: -60px;
+  }
+
+  .hero-globe-ring.ring-one {
+    width: 330px;
+    height: 330px;
+  }
+
+  .hero-globe-ring.ring-two {
+    width: 280px;
+    height: 280px;
+  }
+
+  .hero-globe-ring.ring-three {
+    width: 225px;
+    height: 225px;
+  }
+
+  .hero-globe-sphere {
+    width: 180px;
+    height: 180px;
+  }
+
+  .hero-language-card {
+    padding: 9px 10px;
+  }
+
+  .hero-language-card strong {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-globe-ring,
+  .hero-globe-sphere,
+  .hero-globe-halo,
+  .hero-language-card {
+    animation: none !important;
+  }
+}
+
+/* ===== FIX: VISIBLE LANGUAGE CARD ANIMATION ===== */
+
+.hero-globe .hero-language-card {
+  animation-name: languageCardFloat !important;
+  animation-duration: 2.8s !important;
+  animation-timing-function: ease-in-out !important;
+  animation-iteration-count: infinite !important;
+  animation-delay: var(--delay, 0s) !important;
+  will-change: transform;
+}
+
+/* Give each card a different movement pattern */
+.hero-globe .hero-language-hindi {
+  --delay: 0s;
+  animation-duration: 2.6s !important;
+}
+
+.hero-globe .hero-language-telugu {
+  --delay: -0.7s;
+  animation-duration: 3.1s !important;
+}
+
+.hero-globe .hero-language-tamil {
+  --delay: -1.2s;
+  animation-duration: 2.9s !important;
+}
+
+.hero-globe .hero-language-kannada {
+  --delay: -1.8s;
+  animation-duration: 3.3s !important;
+}
+
+.hero-globe .hero-language-malayalam {
+  --delay: -0.9s;
+  animation-duration: 2.7s !important;
+}
+
+.hero-globe .hero-language-marathi {
+  --delay: -2s;
+  animation-duration: 3s !important;
+}
+
+@keyframes languageCardFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+/* Keep the globe floating too */
+.hero-globe .hero-globe-sphere {
+  animation: landingSphereFloat 4s ease-in-out infinite !important;
+}
+
+@keyframes landingSphereFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+}
+
+/* Disable animation only when the user requests reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-globe .hero-language-card,
+  .hero-globe .hero-globe-sphere {
+    animation: none !important;
+  }
+}
+
