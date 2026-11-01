@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -34,20 +34,9 @@ function getCount(data) {
   return null;
 }
 
-const menuItems = [
-  { label: "Dashboard", path: "/dashboard", icon: "▦" },
-  { label: "Campaigns", path: "/campaigns", icon: "⚑" },
-  { label: "Audience", path: "/audience", icon: "♙" },
-  { label: "Messages", path: "/messages", icon: "✉" },
-  { label: "Templates", path: "/templates", icon: "▤" },
-  { label: "Delivery Logs", path: "/delivery-logs", icon: "◷" },
-  { label: "Feedback", path: "/feedback", icon: "☆" },
-  { label: "Segments", path: "/segments", icon: "♧" },
-];
-
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [stats, setStats] = useState(initialStats);
   const [loading, setLoading] = useState(true);
@@ -66,55 +55,60 @@ export default function Dashboard() {
     localStorage.getItem("user_role") ||
     "Campaign Manager";
 
-  const isAdmin = userRole.toLowerCase() === "admin";
+  const isAdmin = userRole.trim().toLowerCase() === "admin";
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError("");
 
     const endpoints = [
-      { key: "users", url: "/api/users/" },
       { key: "campaigns", url: "/api/campaigns/" },
       { key: "audience", url: "/api/audience/" },
       { key: "messages", url: "/api/messages/" },
+      ...(isAdmin ? [{ key: "users", url: "/api/users/" }] : []),
     ];
 
-    const results = await Promise.allSettled(
-      endpoints.map((item) => api.get(item.url))
-    );
-
-    const nextStats = { ...initialStats };
-    const failed = [];
-
-    results.forEach((result, index) => {
-      const { key, url } = endpoints[index];
-
-      if (result.status === "fulfilled") {
-        nextStats[key] = getCount(result.value.data);
-      } else {
-        failed.push(url);
-      }
-    });
-
-    setStats(nextStats);
-    setLastUpdated(new Date());
-
-    if (failed.length > 0) {
-      setError(
-        `Could not load data from: ${failed.join(", ")}. Check the backend endpoints and permissions.`
+    try {
+      const results = await Promise.allSettled(
+        endpoints.map((item) => api.get(item.url))
       );
-    }
 
-    setLoading(false);
-  }, []);
+      const nextStats = { ...initialStats };
+      const failed = [];
+
+      results.forEach((result, index) => {
+        const { key, url } = endpoints[index];
+
+        if (result.status === "fulfilled") {
+          nextStats[key] = getCount(result.value.data);
+        } else {
+          failed.push(url);
+          console.error(
+            `Failed to load ${url}:`,
+            result.reason
+          );
+        }
+      });
+
+      setStats(nextStats);
+      setLastUpdated(new Date());
+
+      if (failed.length > 0) {
+        setError(
+          `Unable to load some dashboard data: ${failed.join(", ")}.`
+        );
+      }
+    } catch (err) {
+      console.error("Dashboard loading error:", err);
+      setError("Unable to load dashboard data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
-
-  const handleLogout = () => {
-    logout();
-  };
 
   const statCards = [
     {
@@ -176,172 +170,35 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="dash-layout">
+    <div className="dashboard-content">
       <style>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        .dash-layout {
-          min-height: 100vh;
-          background: #f5f7fc;
+        .dashboard-content {
           color: #172344;
           font-family: Inter, Arial, sans-serif;
-        }
-
-        .dash-sidebar {
-          width: 275px;
-          position: fixed;
-          inset: 0 auto 0 0;
-          background: #192952;
-          border-right: 1px solid #24365f;
-          padding: 26px 24px;
-          display: flex;
-          flex-direction: column;
-          z-index: 10;
-          overflow-y: auto;
-        }
-
-        .dash-brand {
-          padding: 20px 6px 30px;
-          font-size: 27px;
-          font-weight: 800;
-          color: #ffffff;
-          line-height: 1.25;
-        }
-
-        .dash-brand span {
-          color: #ffffff;
-        }
-
-        .dash-menu-label {
-          padding: 0 12px;
-          color: #aab8d7;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1.4px;
-          margin-bottom: 12px;
-        }
-
-        .dash-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-        }
-
-        .dash-nav a {
-          display: flex;
-          align-items: center;
-          gap: 13px;
-          padding: 13px 14px;
-          border-radius: 10px;
-          text-decoration: none;
-          color: #ffffff;
-          font-size: 14px;
-          font-weight: 500;
-          transition: background 0.2s;
-        }
-
-        .dash-nav a:hover {
-          background: #263d70;
-          color: #ffffff;
-        }
-
-        .dash-nav a.active {
-          background: #2864ed;
-          color: #ffffff;
-          font-weight: 700;
-        }
-
-        .dash-nav-icon {
-          width: 21px;
-          text-align: center;
-          font-size: 18px;
-        }
-
-        .dash-sidebar-bottom {
-          margin-top: auto;
-          border-top: 1px solid #30416a;
-          padding-top: 18px;
-        }
-
-        .dash-user {
-          padding: 12px 9px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          overflow: hidden;
-        }
-
-        .dash-avatar {
-          width: 38px;
-          height: 38px;
-          flex-shrink: 0;
-          border-radius: 12px;
-          background: #2864ed;
-          color: #ffffff;
-          display: grid;
-          place-items: center;
-          font-weight: 800;
-        }
-
-        .dash-user-name {
-          color: #ffffff;
-          font-size: 12px;
-          font-weight: 800;
-          overflow-wrap: anywhere;
-        }
-
-        .dash-user-role {
-          font-size: 10px;
-          color: #c1cbe0;
-          margin-top: 4px;
-          overflow-wrap: anywhere;
-        }
-
-        .dash-logout {
           width: 100%;
-          border: 0;
-          background: transparent;
-          color: #ffffff;
-          padding: 12px 14px;
-          border-radius: 9px;
-          text-align: left;
-          cursor: pointer;
-          font-weight: 700;
         }
 
-        .dash-logout:hover {
-          background: #263d70;
-        }
-
-        .dash-main {
-          margin-left: 275px;
-          min-height: 100vh;
-          padding: 32px clamp(20px, 4vw, 54px);
-        }
-
-        .dash-topbar {
+        .dashboard-topbar {
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 15px;
-          margin-bottom: 36px;
+          margin-bottom: 30px;
         }
 
-        .dash-topbar h1 {
+        .dashboard-topbar h1 {
           font-size: 23px;
           margin: 0;
         }
 
-        .dash-topbar p {
+        .dashboard-topbar p {
           font-size: 12px;
           color: #8791a6;
           margin: 7px 0 0;
         }
 
-        .dash-refresh {
-          background: #6252f6;
+        .dashboard-refresh {
+          background: #3569f6;
           color: white;
           border: 0;
           padding: 12px 17px;
@@ -351,16 +208,16 @@ export default function Dashboard() {
           cursor: pointer;
         }
 
-        .dash-refresh:disabled {
+        .dashboard-refresh:disabled {
           opacity: 0.6;
           cursor: wait;
         }
 
-        .dash-welcome {
+        .dashboard-welcome {
           margin-bottom: 30px;
         }
 
-        .dash-eyebrow {
+        .dashboard-eyebrow {
           color: #6252f6;
           font-size: 10px;
           font-weight: 800;
@@ -368,19 +225,19 @@ export default function Dashboard() {
           margin-bottom: 10px;
         }
 
-        .dash-welcome h2 {
+        .dashboard-welcome h2 {
           font-size: clamp(26px, 3vw, 36px);
           margin: 0 0 10px;
         }
 
-        .dash-welcome p {
+        .dashboard-welcome p {
           color: #77839a;
           font-size: 13px;
           line-height: 1.7;
           margin: 0;
         }
 
-        .dash-section-heading {
+        .dashboard-section-heading {
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -388,23 +245,23 @@ export default function Dashboard() {
           margin-bottom: 17px;
         }
 
-        .dash-section-heading h3 {
+        .dashboard-section-heading h3 {
           margin: 0;
           font-size: 18px;
         }
 
-        .dash-updated {
+        .dashboard-updated {
           color: #8791a6;
           font-size: 11px;
         }
 
-        .dash-stats {
+        .dashboard-stats {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 17px;
         }
 
-        .dash-stat {
+        .dashboard-stat {
           background: white;
           border: 1px solid #e6eaf3;
           border-radius: 15px;
@@ -413,7 +270,7 @@ export default function Dashboard() {
           min-width: 0;
         }
 
-        .dash-stat-top {
+        .dashboard-stat-top {
           display: flex;
           align-items: center;
           gap: 10px;
@@ -421,34 +278,34 @@ export default function Dashboard() {
           font-size: 12px;
         }
 
-        .dash-stat-icon {
+        .dashboard-stat-icon {
           font-size: 21px;
         }
 
-        .dash-stat-value {
+        .dashboard-stat-value {
           font-size: 31px;
           font-weight: 800;
           margin-top: 22px;
           color: #172344;
         }
 
-        .dash-stat-description {
+        .dashboard-stat-description {
           color: #8791a6;
           font-size: 11px;
           margin: 8px 0 0;
         }
 
-        .dash-modules-section {
+        .dashboard-modules-section {
           margin-top: 36px;
         }
 
-        .dash-module-grid {
+        .dashboard-module-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 17px;
         }
 
-        .dash-module {
+        .dashboard-module {
           background: white;
           border: 1px solid #e6eaf3;
           border-radius: 15px;
@@ -456,25 +313,25 @@ export default function Dashboard() {
           min-width: 0;
         }
 
-        .dash-module-icon {
+        .dashboard-module-icon {
           font-size: 26px;
         }
 
-        .dash-module h4 {
+        .dashboard-module h4 {
           font-size: 15px;
           margin: 15px 0 8px;
         }
 
-        .dash-module p {
+        .dashboard-module p {
           color: #7c879d;
           font-size: 12px;
           line-height: 1.7;
           min-height: 40px;
         }
 
-        .dash-module button {
-          background: #f0edff;
-          color: #6252f6;
+        .dashboard-module button {
+          background: #eef2ff;
+          color: #3569f6;
           border: 0;
           border-radius: 8px;
           padding: 10px 13px;
@@ -483,7 +340,11 @@ export default function Dashboard() {
           cursor: pointer;
         }
 
-        .dash-error {
+        .dashboard-module button:hover {
+          background: #dfe7ff;
+        }
+
+        .dashboard-error {
           background: #fff0f0;
           color: #b42318;
           padding: 13px;
@@ -494,200 +355,126 @@ export default function Dashboard() {
           overflow-wrap: anywhere;
         }
 
-        .dash-footer {
+        .dashboard-footer {
           margin-top: 38px;
           color: #9aa3b5;
           font-size: 11px;
           text-align: center;
         }
 
-        @media (max-width: 1000px) {
-          .dash-sidebar {
-            width: 235px;
-          }
-
-          .dash-main {
-            margin-left: 235px;
-          }
-
-          .dash-stats {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-
         @media (max-width: 650px) {
-          .dash-sidebar {
-            position: static;
-            width: 100%;
-            min-height: auto;
-            padding: 15px;
-          }
-
-          .dash-brand {
-            padding: 0 7px 15px;
-          }
-
-          .dash-nav {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .dash-sidebar-bottom {
-            margin-top: 15px;
-          }
-
-          .dash-main {
-            margin-left: 0;
-            padding: 23px 15px;
-          }
-
-          .dash-topbar {
+          .dashboard-topbar {
             align-items: flex-start;
             flex-wrap: wrap;
           }
 
-          .dash-stats,
-          .dash-module-grid {
+          .dashboard-stats,
+          .dashboard-module-grid {
             grid-template-columns: 1fr;
           }
         }
       `}</style>
 
-      <aside className="dash-sidebar">
-        <div className="dash-brand">
-          AI
-          <br />
-          <span>PublicConnect</span>
+      <header className="dashboard-topbar">
+        <div>
+          <h1>Dashboard</h1>
+          <p>AI PublicConnect / Overview</p>
         </div>
 
-        <div className="dash-menu-label">WORKSPACE</div>
+        <button
+          className="dashboard-refresh"
+          onClick={fetchDashboardData}
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "↻ Refresh Data"}
+        </button>
+      </header>
 
-        <nav className="dash-nav" aria-label="Main navigation">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
-              <span className="dash-nav-icon">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-
-          {isAdmin && (
-            <NavLink
-              to="/users"
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
-              <span className="dash-nav-icon">♙</span>
-              User Management
-            </NavLink>
-          )}
-        </nav>
-
-        <div className="dash-sidebar-bottom">
-          <div className="dash-user">
-            <div className="dash-avatar">
-              {userName.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div className="dash-user-name">{userName}</div>
-              <div className="dash-user-role">{userRole}</div>
-            </div>
-          </div>
-
-          <button className="dash-logout" onClick={handleLogout}>
-            ↪ &nbsp; Logout
-          </button>
+      <section className="dashboard-welcome">
+        <div className="dashboard-eyebrow">
+          YOUR COMMUNICATION CENTER
         </div>
-      </aside>
 
-      <main className="dash-main">
-        <header className="dash-topbar">
-          <div>
-            <h1>Dashboard</h1>
-            <p>AI PublicConnect / Overview</p>
-          </div>
+        <h2>Welcome back, {userName}!</h2>
 
-          <button
-            className="dash-refresh"
-            onClick={fetchDashboardData}
-            disabled={loading}
-          >
-            {loading ? "Refreshing..." : "↻ Refresh Data"}
-          </button>
-        </header>
+        <p>
+          Manage campaigns, audiences, and multilingual communications
+          from one place.
+        </p>
+      </section>
 
-        <section className="dash-welcome">
-          <div className="dash-eyebrow">YOUR COMMUNICATION CENTER</div>
-          <h2>Welcome back, {userName}!</h2>
-          <p>
-            Manage campaigns, audiences, and multilingual communications
-            from one place.
-          </p>
-        </section>
+      {error && (
+        <div className="dashboard-error" role="alert">
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className="dash-error" role="alert">
-            {error}
-          </div>
-        )}
+      <section>
+        <div className="dashboard-section-heading">
+          <h3>Platform Overview</h3>
 
-        <section>
-          <div className="dash-section-heading">
-            <h3>Platform Overview</h3>
-            <span className="dash-updated">
-              {lastUpdated
-                ? `Updated ${lastUpdated.toLocaleTimeString()}`
-                : "Loading platform data..."}
-            </span>
-          </div>
+          <span className="dashboard-updated">
+            {lastUpdated
+              ? `Updated ${lastUpdated.toLocaleTimeString()}`
+              : "Loading platform data..."}
+          </span>
+        </div>
 
-          <div className="dash-stats">
-            {statCards.map((item) => (
-              <article key={item.title} className="dash-stat">
-                <div className="dash-stat-top">
-                  <span className="dash-stat-icon">{item.icon}</span>
-                  <span>{item.title}</span>
-                </div>
+        <div className="dashboard-stats">
+          {statCards.map((item) => (
+            <article key={item.title} className="dashboard-stat">
+              <div className="dashboard-stat-top">
+                <span className="dashboard-stat-icon">
+                  {item.icon}
+                </span>
+                <span>{item.title}</span>
+              </div>
 
-                <div className="dash-stat-value">
-                  {loading && item.value === null
-                    ? "..."
-                    : item.value === null
+              <div className="dashboard-stat-value">
+                {loading && item.value === null
+                  ? "..."
+                  : item.value === null
                     ? "—"
                     : item.value.toLocaleString()}
-                </div>
+              </div>
 
-                <p className="dash-stat-description">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+              <p className="dashboard-stat-description">
+                {item.description}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-        <section className="dash-modules-section">
-          <div className="dash-section-heading">
-            <h3>Quick Access</h3>
-          </div>
+      <section className="dashboard-modules-section">
+        <div className="dashboard-section-heading">
+          <h3>Quick Access</h3>
+        </div>
 
-          <div className="dash-module-grid">
-            {modules.map((module) => (
-              <article key={module.title} className="dash-module">
-                <div className="dash-module-icon">{module.icon}</div>
-                <h4>{module.title}</h4>
-                <p>{module.description}</p>
-                <button onClick={() => navigate(module.path)}>
-                  Open Module →
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
+        <div className="dashboard-module-grid">
+          {modules.map((module) => (
+            <article
+              key={module.title}
+              className="dashboard-module"
+            >
+              <div className="dashboard-module-icon">
+                {module.icon}
+              </div>
 
-        <footer className="dash-footer">
-          AI PublicConnect · Multilingual Public Awareness Platform
-        </footer>
-      </main>
+              <h4>{module.title}</h4>
+              <p>{module.description}</p>
+
+              <button onClick={() => navigate(module.path)}>
+                Open Module →
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <footer className="dashboard-footer">
+        AI PublicConnect · Multilingual Public Awareness Platform
+      </footer>
     </div>
   );
 }

@@ -8,10 +8,12 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
+from app.ai_service.prompts import build_prompt
+
 logger = logging.getLogger(__name__)
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
-load_dotenv(BACKEND_DIR / ".env", override=True)
+load_dotenv(BACKEND_DIR / ".env")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = (
@@ -20,6 +22,9 @@ GEMINI_MODEL = (
     .removeprefix("models/")
 )
 
+SMS_MAX_CHARS = 160
+MAX_ATTEMPTS = 3
+
 
 def count_words(text: str) -> int:
     """Count whitespace-separated words."""
@@ -27,11 +32,45 @@ def count_words(text: str) -> int:
 
 
 def clean_content(text: str) -> str:
-    """Remove common Markdown wrappers from generated content."""
+    """Remove Markdown code fences and unnecessary whitespace."""
     text = text.strip()
     text = re.sub(r"^```[a-zA-Z]*\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
     return text.strip()
+
+
+def limit_sms(text: str, max_chars: int = SMS_MAX_CHARS) -> str:
+    """Keep SMS within the character limit."""
+    text = clean_content(text)
+
+    if len(text) <= max_chars:
+        return text
+
+    sentences = re.split(r"(?<=[.!?।])\s+", text)
+    result = ""
+
+    for sentence in sentences:
+        candidate = (result + " " + sentence).strip()
+
+        if len(candidate) <= max_chars:
+            result = candidate
+        elif not result:
+            for word in sentence.split():
+                candidate = (result + " " + word).strip()
+
+                if len(candidate) > max_chars:
+                    break
+
+                result = candidate
+
+            break
+        else:
+            break
+
+    if result:
+        return result
+
+    return text[:max_chars]
 
 
 async def generate_campaign_content(
@@ -41,45 +80,47 @@ async def generate_campaign_content(
     content_type: str,
     tone: str,
     word_limit: int,
+    key_points: str = "",
+    campaign_type: str = "Awareness",
 ) -> str:
+    """Generate campaign content using Gemini and campaign templates."""
 
     if not GEMINI_API_KEY:
         raise RuntimeError(
             "GEMINI_API_KEY is missing from backend/.env"
         )
 
-    if not 1 <= word_limit <= 2000:
+    if not isinstance(word_limit, int) or isinstance(word_limit, bool):
+        raise RuntimeError("Word limit must be an integer.")
+
+    if not 20 <= word_limit <= 500:
+        raise RuntimeError("Word limit must be between 20 and 500.")
+
+    if not all(
+        isinstance(value, str) and value.strip()
+        for value in (
+            topic,
+            audience,
+            language,
+            content_type,
+            tone,
+            campaign_type,
+        )
+    ):
         raise RuntimeError(
-            "Word limit must be between 1 and 2000."
+            "All required content fields must be provided."
         )
 
-    is_sms = content_type.strip().lower() == "sms"
+    if not isinstance(key_points, str):
+        raise RuntimeError("Key points must be text.")
 
-    prompt = f"""
-You are a professional public-awareness content writer for AI PublicConnect.
+    if len(key_points) > 2000:
+        raise RuntimeError(
+            "Key points must not exceed 2000 characters."
+        )
 
-Create a complete, ready-to-publish public-awareness message.
-
-Topic: {topic}
-Target audience: {audience}
-Required language: {language}
-Content type: {content_type}
-Tone: {tone}
-Maximum requested length: {word_limit} words.
-
-Requirements:
-1. Write entirely in {language}, using its appropriate script.
-2. Keep the message within the requested word limit.
-3. Include a clear opening, useful information, practical advice,
-   and a conclusion when appropriate for the content type.
-4. Use simple, natural, culturally appropriate language.
-5. Avoid repetition and unnecessary headings.
-6. Never invent statistics, government schemes, dates, or contact details.
-7. For health topics, provide general awareness rather than a diagnosis.
-8. For SMS content, write a concise message suitable for a text message.
-9. Complete every sentence.
-10. Return only the finished content.
-"""
+    channel = content_type.strip().lower()
+    is_sms = channel == "sms"
 
     url = (
         "https://generativelanguage.googleapis.com/v1beta/"
@@ -99,31 +140,50 @@ Requirements:
     )
 
     best_content = ""
-    best_word_count = 0
+
+    # Convert newline-separated key points into a list.
+    points = [
+        point.strip()
+        for point in key_points.splitlines()
+        if point.strip()
+    ]
+
+    # Build the prompt once from prompts.py.
+    prompt = build_prompt(
+        campaign_type=campaign_type,
+        topic=topic,
+        audience=audience,
+        tone=tone,
+        language=language,
+        channel=content_type,
+        length=(
+            "SMS short"
+            if is_sms
+            else f"{word_limit} words"
+        ),
+        key_points=points,
+    )
 
     async with httpx.AsyncClient(timeout=timeout) as client:
-        for attempt in range(3):
+        for attempt in range(MAX_ATTEMPTS):
             current_prompt = prompt
 
             if attempt > 0:
-                current_prompt += f"""
-
-Improve the previous attempt. Return a complete, useful message
-in {language}, within {word_limit} words. Avoid repetition.
-Do not include an explanation or mention these instructions.
+                current_prompt += """
+RETRY REQUIREMENTS:
+- Correct any previous length or formatting problem.
+- Preserve the most important information.
+- Follow the requested campaign template and channel limits.
+- Return only the finished message.
 """
 
             payload = {
                 "contents": [
-                    {
-                        "parts": [
-                            {"text": current_prompt}
-                        ]
-                    }
+                    {"parts": [{"text": current_prompt}]}
                 ],
                 "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 4096,
+                    "temperature": 0.3 if is_sms else 0.4,
+                    "maxOutputTokens": 1024,
                 },
             }
 
@@ -136,15 +196,13 @@ Do not include an explanation or mention these instructions.
 
             except httpx.TimeoutException as exc:
                 logger.warning(
-                    "Gemini timeout on attempt %s/3",
+                    "Gemini timeout on attempt %s/%s",
                     attempt + 1,
+                    MAX_ATTEMPTS,
                 )
 
-                if best_content:
-                    return best_content
-
-                if attempt < 2:
-                    await asyncio.sleep(2)
+                if attempt < MAX_ATTEMPTS - 1:
+                    await asyncio.sleep(2 * (attempt + 1))
                     continue
 
                 raise RuntimeError(
@@ -152,14 +210,18 @@ Do not include an explanation or mention these instructions.
                 ) from exc
 
             except httpx.RequestError as exc:
-                logger.exception("Gemini connection failed")
+                logger.warning(
+                    "Gemini connection failed on attempt %s/%s",
+                    attempt + 1,
+                    MAX_ATTEMPTS,
+                )
 
-                if best_content:
-                    return best_content
+                if attempt < MAX_ATTEMPTS - 1:
+                    await asyncio.sleep(2 * (attempt + 1))
+                    continue
 
                 raise RuntimeError(
-                    "Could not connect to Gemini. "
-                    "Check your internet connection."
+                    "Could not connect to Gemini. Check your internet."
                 ) from exc
 
             if response.status_code != 200:
@@ -179,157 +241,238 @@ Do not include an explanation or mention these instructions.
 
                 if response.status_code in (401, 403):
                     raise RuntimeError(
-                        "Gemini authentication failed. "
-                        "Check API settings."
+                        "Gemini authentication failed. Check API settings."
                     )
 
                 if response.status_code == 404:
                     raise RuntimeError(
-                        f"Gemini model '{GEMINI_MODEL}' is unavailable. "
-                        "Check the model name and API availability."
+                        f"Gemini model '{GEMINI_MODEL}' is unavailable."
                     )
 
                 if response.status_code == 429:
                     raise RuntimeError(
-                        "Gemini rate limit or quota reached. "
-                        "Please try again later."
+                        "Gemini rate limit or quota reached. Try again later."
                     )
 
                 if response.status_code in (500, 502, 503, 504):
-                    if best_content:
-                        return best_content
-
-                    if attempt < 2:
+                    if attempt < MAX_ATTEMPTS - 1:
                         await asyncio.sleep(2 * (attempt + 1))
                         continue
 
                     raise RuntimeError(
-                        "Gemini is temporarily unavailable. "
-                        "Please try again later."
+                        "Gemini is temporarily unavailable. Try again later."
                     )
 
                 raise RuntimeError(
-                    f"Gemini request failed with HTTP "
-                    f"{response.status_code}: {details}"
+                    f"Gemini request failed with HTTP {response.status_code}."
                 )
 
             try:
                 data = response.json()
-            except ValueError as exc:
-                logger.error("Gemini returned invalid JSON")
+                candidates = data.get("candidates", [])
 
-                if attempt < 2:
-                    await asyncio.sleep(1)
-                    continue
-
-                if best_content:
-                    return best_content
-
-                raise RuntimeError(
-                    "Gemini returned an invalid response."
-                ) from exc
-
-            candidates = data.get("candidates", [])
-
-            if not candidates:
-                logger.warning("Gemini returned no candidates")
-
-                if attempt < 2:
-                    await asyncio.sleep(1)
-                    continue
-
-                if best_content:
-                    return best_content
-
-                raise RuntimeError(
-                    "Gemini returned no content. Please try again."
+                parts = (
+                    candidates[0]
+                    .get("content", {})
+                    .get("parts", [])
+                    if candidates
+                    else []
                 )
 
-            candidate = candidates[0]
-            finish_reason = candidate.get("finishReason", "")
-            parts = candidate.get("content", {}).get("parts", [])
-
-            generated_text = clean_content(
-                "\n".join(
-                    part["text"]
-                    for part in parts
-                    if isinstance(part.get("text"), str)
+                generated_text = clean_content(
+                    "\n".join(
+                        part["text"]
+                        for part in parts
+                        if isinstance(part.get("text"), str)
+                    )
                 )
-            )
+
+            except (
+                ValueError,
+                IndexError,
+                AttributeError,
+                TypeError,
+            ):
+                generated_text = ""
 
             if not generated_text:
-                logger.warning("Gemini returned empty content")
+                logger.warning("Gemini returned empty content.")
 
-                if attempt < 2:
+                if attempt < MAX_ATTEMPTS - 1:
                     await asyncio.sleep(1)
                     continue
 
-                if best_content:
-                    return best_content
-
                 raise RuntimeError(
-                    "Gemini returned empty content."
+                    "Gemini returned empty content. Please try again."
                 )
 
             actual_words = count_words(generated_text)
-
-            # Keep the longest usable response from all attempts.
-            if actual_words > best_word_count:
-                best_content = generated_text
-                best_word_count = actual_words
+            actual_chars = len(generated_text)
 
             logger.info(
-                "Attempt %s/3: words=%s, requested_limit=%s, "
-                "finish_reason=%s",
+                "Attempt %s/%s: words=%s, chars=%s, SMS=%s",
                 attempt + 1,
+                MAX_ATTEMPTS,
                 actual_words,
-                word_limit,
-                finish_reason,
+                actual_chars,
+                is_sms,
             )
 
-            # Do not return an output that clearly exceeds the limit.
-            if actual_words > word_limit:
-                shortened_prompt = f"""
-Rewrite this message in {language}, preserving its main information.
-The maximum length is {word_limit} words.
-Return only the rewritten message.
-
-Message:
-{generated_text}
-"""
-                prompt = shortened_prompt
-                if attempt < 2:
-                    await asyncio.sleep(1)
-                    continue
-
-            # For short content types, even a few words may be sufficient.
-            minimum_words = min(
-                word_limit,
-                8 if is_sms else max(15, int(word_limit * 0.75)),
-            )
-
-            if (
-                actual_words >= minimum_words
-                and finish_reason != "MAX_TOKENS"
-                and actual_words <= word_limit
-            ):
+            if is_sms and actual_chars <= SMS_MAX_CHARS:
                 return generated_text
 
-            if attempt < 2:
-                logger.warning(
-                    "Retrying incomplete or short response."
+            if not is_sms and actual_words <= word_limit:
+                return generated_text
+
+            # Retain the shortest oversized response as a fallback.
+            if (
+                not best_content
+                or (
+                    is_sms
+                    and len(generated_text) < len(best_content)
                 )
+                or (
+                    not is_sms
+                    and actual_words < count_words(best_content)
+                )
+            ):
+                best_content = generated_text
+
+            if attempt < MAX_ATTEMPTS - 1:
                 await asyncio.sleep(1)
 
-    if best_content:
-        logger.warning(
-            "Returning best available response: %s words "
-            "for a requested maximum of %s.",
-            best_word_count,
-            word_limit,
+    # Final safeguard for SMS.
+    if is_sms and best_content:
+        safe_content = limit_sms(best_content, SMS_MAX_CHARS)
+
+        if safe_content and len(safe_content) <= SMS_MAX_CHARS:
+            return safe_content
+
+        raise RuntimeError(
+            "Could not create an SMS within 160 characters. Please retry."
         )
-        return best_content
+
+    # Preserve the word limit for other channels.
+    if best_content:
+        words = best_content.split()
+        safe_content = " ".join(words[:word_limit]).strip()
+
+        if safe_content:
+            return safe_content
 
     raise RuntimeError(
         "Unable to generate content. Please try again."
     )
+async def improve_campaign_tone(
+    content: str,
+    target_tone: str,
+) -> str:
+    """Rewrite campaign content using the requested tone."""
+
+    if not GEMINI_API_KEY:
+        raise RuntimeError(
+            "GEMINI_API_KEY is missing from backend/.env"
+        )
+
+    allowed_tones = {
+        "Friendly",
+        "Formal",
+        "Persuasive",
+        "Informative",
+        "Urgent",
+    }
+
+    if target_tone not in allowed_tones:
+        raise ValueError("Unsupported target tone.")
+
+    content = content.strip()
+
+    if not content:
+        raise ValueError("Content cannot be empty.")
+
+    prompt = f"""
+You are an expert public-awareness campaign editor.
+
+Rewrite the following content in a {target_tone} tone.
+
+Requirements:
+- Preserve the original meaning and important facts.
+- Do not invent facts, statistics, or contact information.
+- Use clear and accessible language.
+- Preserve the original language.
+- Return only the rewritten content.
+
+Original content:
+{content}
+"""
+
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/"
+        f"models/{GEMINI_MODEL}:generateContent"
+    )
+
+    headers = {
+        "x-goog-api-key": GEMINI_API_KEY,
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.4,
+            "maxOutputTokens": 2048,
+        },
+    }
+
+    timeout = httpx.Timeout(
+        connect=15.0,
+        read=90.0,
+        write=30.0,
+        pool=15.0,
+    )
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        response = await client.post(
+            url,
+            headers=headers,
+            json=payload,
+        )
+
+    if response.is_error:
+        logger.error(
+            "Gemini tone improvement failed: status=%s body=%s",
+            response.status_code,
+            response.text[:500],
+        )
+        raise RuntimeError(
+            "The AI service could not improve the content."
+        )
+
+    data = response.json()
+
+    try:
+        improved_content = (
+            data["candidates"][0]["content"]["parts"][0]["text"]
+        )
+    except (KeyError, IndexError, TypeError) as exc:
+        logger.error(
+            "Gemini returned an unexpected response."
+        )
+        raise RuntimeError(
+            "The AI service returned an invalid response."
+        ) from exc
+
+    improved_content = clean_content(improved_content)
+
+    if not improved_content:
+        raise RuntimeError(
+            "The AI service returned empty content."
+        )
+
+    return improved_content

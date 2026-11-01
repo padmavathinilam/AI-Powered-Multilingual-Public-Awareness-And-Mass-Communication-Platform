@@ -65,7 +65,7 @@ function Register() {
 
     if (loading) return;
 
-    // Validate required fields. Organization is optional.
+    // Validate required fields
     if (
       !form.full_name.trim() ||
       !form.email.trim() ||
@@ -91,6 +91,18 @@ function Register() {
 
     if (phoneDigits.length < 10 || phoneDigits.length > 15) {
       setError("Please enter a valid phone number.");
+      return;
+    }
+
+    // Full name validation
+    if (form.full_name.trim().length > 100) {
+      setError("Full name must not exceed 100 characters.");
+      return;
+    }
+
+    // Organization validation
+    if (form.organization_name.trim().length > 150) {
+      setError("Organization name must not exceed 150 characters.");
       return;
     }
 
@@ -127,7 +139,7 @@ function Register() {
         name: form.full_name.trim(),
         email: form.email.trim().toLowerCase(),
         phone: form.phone.trim(),
-        organization_name: form.organization_name.trim() || null,
+        organization_name: form.organization_name.trim(),
         password: form.password,
         role: form.role,
       };
@@ -162,8 +174,13 @@ function Register() {
       } else if (Array.isArray(detail)) {
         setError(
           detail
-            .map((item) => item.msg || item.message || "Invalid input")
-            .join(", ")
+            .map((item) => {
+              const field = item.loc?.slice(1).join(".");
+              const message = item.msg || "Invalid input";
+
+              return field ? `${field}: ${message}` : message;
+            })
+            .join("; ")
         );
       } else if (typeof detail === "string") {
         setError(detail);
@@ -176,6 +193,11 @@ function Register() {
           "Registration failed. Please check your details and try again."
         );
       }
+
+      console.error(
+        "Registration error:",
+        err.response?.data || err.message
+      );
     } finally {
       setLoading(false);
     }
@@ -248,7 +270,6 @@ function Register() {
             />
           </div>
 
-          {/* Organization is optional */}
           <div className="form-group">
             <label htmlFor="organization_name">
               Organization Name (Optional)
@@ -303,7 +324,6 @@ function Register() {
               letters, a number, and a special character.
             </small>
 
-            {/* Live password strength indicator */}
             <div className="password-strength" aria-live="polite">
               <div className="password-strength-track">
                 <div

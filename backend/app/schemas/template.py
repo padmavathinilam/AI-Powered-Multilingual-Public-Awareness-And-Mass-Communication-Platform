@@ -1,12 +1,12 @@
+
 from pydantic import BaseModel, Field
 
 
 class TemplateCreate(BaseModel):
     name: str
     channel: str
-    language: str
+    language: str = "English"
     content: str
-    created_by: int
     title: str | None = None
     category: str = "General"
     body: str | None = None

@@ -1,8 +1,26 @@
-node_modules/
-dist/
-backend/venv/
-backend/.env
-backend/ai_publicconnect.db
+# Python
 __pycache__/
 *.py[cod]
+*.log
+
+# Virtual environments
+venv/
+venv_new/
+.venv/
+
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Archives
+backend.zip

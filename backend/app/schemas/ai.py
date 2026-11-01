@@ -5,29 +5,35 @@ from pydantic import BaseModel, Field, field_validator
 
 
 IndianLanguage = Literal[
-    "English",
-    "Assamese",
-    "Bengali",
-    "Bodo",
-    "Dogri",
-    "Gujarati",
-    "Hindi",
-    "Kannada",
-    "Kashmiri",
-    "Konkani",
-    "Maithili",
-    "Malayalam",
-    "Manipuri",
-    "Marathi",
-    "Nepali",
-    "Odia",
-    "Punjabi",
-    "Sanskrit",
-    "Santali",
-    "Sindhi",
-    "Tamil",
-    "Telugu",
-    "Urdu",
+    "English", "Assamese", "Bengali", "Bodo", "Dogri",
+    "Gujarati", "Hindi", "Kannada", "Kashmiri", "Konkani",
+    "Maithili", "Malayalam", "Manipuri", "Marathi", "Nepali",
+    "Odia", "Punjabi", "Sanskrit", "Santali", "Sindhi",
+    "Tamil", "Telugu", "Urdu",
+]
+
+CampaignType = Literal[
+    "Awareness",
+    "Emergency Alert",
+    "Education",
+    "Announcement",
+]
+
+ContentType = Literal[
+    "Awareness Message",
+    "Social Media Post",
+    "SMS",
+    "WhatsApp",
+    "Announcement",
+    "Email",
+]
+
+ToneType = Literal[
+    "Friendly",
+    "Formal",
+    "Persuasive",
+    "Informative",
+    "Urgent",
 ]
 
 
@@ -35,33 +41,27 @@ class AIGenerateRequest(BaseModel):
     topic: str = Field(min_length=3, max_length=200)
     audience: str = Field(min_length=2, max_length=200)
 
+    campaign_type: CampaignType = "Awareness"
     language: IndianLanguage = "English"
-
-    content_type: Literal[
-        "Awareness Message",
-        "Social Media Post",
-        "SMS",
-        "Announcement",
-    ] = "Awareness Message"
-
-    tone: Literal[
-        "Friendly",
-        "Formal",
-        "Persuasive",
-        "Informative",
-    ] = "Friendly"
+    content_type: ContentType = "Awareness Message"
+    tone: ToneType = "Friendly"
 
     word_limit: int = Field(default=150, ge=20, le=500)
+
+    key_points: str = Field(default="", max_length=2000)
 
     @field_validator("topic", "audience")
     @classmethod
     def validate_non_empty_text(cls, value: str) -> str:
         value = value.strip()
-
         if not value:
             raise ValueError("This field cannot be empty.")
-
         return value
+
+    @field_validator("key_points")
+    @classmethod
+    def clean_key_points(cls, value: str) -> str:
+        return value.strip()
 
 
 class AIGenerateResponse(BaseModel):

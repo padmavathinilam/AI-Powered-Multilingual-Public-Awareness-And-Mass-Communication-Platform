@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "./services/api";
@@ -16,7 +15,8 @@ import SegmentMembers from "./pages/SegmentMembers.jsx";
 import SidebarLayout from "./components/SidebarLayout.jsx";
 import CampaignWizard from "./pages/CampaignWizard.jsx";
 import Templates from "./pages/Templates.jsx";
-import ContentStudio from "./pages/ContentStudio.jsx";
+import CampaignContentFlow from "./pages/CampaignContentFlow.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 const languages = [
   { native: "नमस्ते", name: "Hindi" },
@@ -86,16 +86,31 @@ export default function App() {
     return () => window.clearInterval(interval);
   }, [location.pathname]);
 
-  // Authentication pages
+  // Login
   if (location.pathname === "/login") {
     return <Login />;
   }
 
+  // Registration
   if (location.pathname === "/register") {
     return <Register />;
   }
 
-  // Dashboard
+  // Admin dashboard and user management
+  if (
+    location.pathname === "/admin" ||
+    location.pathname === "/users"
+  ) {
+    return (
+      <ProtectedRoute allowedRoles={["Admin"]}>
+        <SidebarLayout>
+          <AdminDashboard />
+        </SidebarLayout>
+      </ProtectedRoute>
+    );
+  }
+
+  // Main dashboard
   if (location.pathname === "/dashboard") {
     return (
       <ProtectedPage>
@@ -104,7 +119,7 @@ export default function App() {
     );
   }
 
-  // Campaign creation wizard
+  // Create campaign
   if (
     location.pathname === "/campaigns/new" ||
     location.pathname === "/campaigns/create"
@@ -125,7 +140,7 @@ export default function App() {
     );
   }
 
-  // Template library
+  // Templates
   if (location.pathname === "/templates") {
     return (
       <ProtectedPage>
@@ -133,16 +148,19 @@ export default function App() {
       </ProtectedPage>
     );
   }
-  
-  // AI Content Studio
-  if (location.pathname === "/content-studio") {
+
+  // AI Content Studio — Tasks 7, 8, 9 and 10
+  // All four tasks are displayed inside CampaignContentFlow.
+  if (
+    location.pathname === "/content-studio" ||
+    location.pathname === "/campaign-content"
+  ) {
     return (
       <ProtectedPage>
-        <ContentStudio />
+        <CampaignContentFlow />
       </ProtectedPage>
     );
   }
-
 
   // Messages
   if (location.pathname === "/messages") {
@@ -153,7 +171,7 @@ export default function App() {
     );
   }
 
-  // Audience
+  // Audience management
   if (location.pathname === "/audience") {
     return (
       <ProtectedPage>
@@ -162,7 +180,7 @@ export default function App() {
     );
   }
 
-  // Audience segments list
+  // Segments list
   if (location.pathname === "/segments") {
     return (
       <ProtectedPage>
@@ -171,7 +189,7 @@ export default function App() {
     );
   }
 
-  // Create a new segment
+  // Create a segment
   if (
     location.pathname === "/segments/new" ||
     location.pathname === "/segments/create"
@@ -183,8 +201,7 @@ export default function App() {
     );
   }
 
-
-  // Edit an existing segment
+  // Edit a segment
   const editMatch = location.pathname.match(
     /^\/segments\/([^/]+)\/edit$/
   );
@@ -197,7 +214,7 @@ export default function App() {
     );
   }
 
-  // View members of a selected segment
+  // View segment members
   const membersMatch = location.pathname.match(
     /^\/segments\/([^/]+)$/
   );
@@ -213,9 +230,10 @@ export default function App() {
     );
   }
 
-  // Homepage navigation helper
+  // Landing page navigation
   const scrollTo = (id) => {
     setMenuOpen(false);
+
     document.getElementById(id)?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -724,6 +742,7 @@ export default function App() {
         @media (max-width: 760px) {
           .pc-nav-inner { flex-wrap: wrap; padding: 12px 0; }
           .pc-mobile-toggle { display: block; }
+
           .pc-nav-links {
             display: none;
             order: 3;
@@ -732,12 +751,15 @@ export default function App() {
             align-items: stretch;
             gap: 0;
           }
+
           .pc-nav-links.pc-menu-open { display: flex; }
           .pc-nav-links button { text-align: left; padding: 12px 0; }
+
           .pc-hero-inner {
             grid-template-columns: 1fr;
             padding: 45px 0 25px;
           }
+
           .pc-globe-stage { min-height: 390px; }
           .pc-impact-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
           .pc-steps-grid { grid-template-columns: 1fr; }
@@ -891,7 +913,11 @@ export default function App() {
                 <div className="pc-globe-center">
                   <span>✦</span>
                   <strong>AI</strong>
-                  <small>PUBLIC<br />CONNECT</small>
+                  <small>
+                    PUBLIC
+                    <br />
+                    CONNECT
+                  </small>
                 </div>
               </div>
 
@@ -918,11 +944,36 @@ export default function App() {
         <div className="pc-impact-wrap">
           <div className="pc-impact-strip">
             {[
-              { icon: "♥", title: "Health", text: "Better health", color: "#ffeaf2" },
-              { icon: "🎓", title: "Education", text: "Knowledge", color: "#eaf1ff" },
-              { icon: "✓", title: "Safety", text: "Safer communities", color: "#e3f9ef" },
-              { icon: "▥", title: "Government", text: "Transparency", color: "#f0eaff" },
-              { icon: "👥", title: "Community", text: "Stronger together", color: "#fff0dc" },
+              {
+                icon: "♥",
+                title: "Health",
+                text: "Better health",
+                color: "#ffeaf2",
+              },
+              {
+                icon: "🎓",
+                title: "Education",
+                text: "Knowledge",
+                color: "#eaf1ff",
+              },
+              {
+                icon: "✓",
+                title: "Safety",
+                text: "Safer communities",
+                color: "#e3f9ef",
+              },
+              {
+                icon: "▥",
+                title: "Government",
+                text: "Transparency",
+                color: "#f0eaff",
+              },
+              {
+                icon: "👥",
+                title: "Community",
+                text: "Stronger together",
+                color: "#fff0dc",
+              },
             ].map((impact) => (
               <div className="pc-impact-item" key={impact.title}>
                 <span
@@ -943,9 +994,11 @@ export default function App() {
         <section className="pc-section" id="features">
           <div className="pc-section-inner">
             <div className="pc-section-eyebrow">PLATFORM FEATURES</div>
+
             <h2 className="pc-section-title">
               Communication that makes an impact
             </h2>
+
             <p className="pc-section-description">
               Everything your team needs to share useful public information
               with communities in a language they understand.
@@ -963,12 +1016,17 @@ export default function App() {
           </div>
         </section>
 
-        <section className="pc-section pc-steps-section" id="how-it-works">
+        <section
+          className="pc-section pc-steps-section"
+          id="how-it-works"
+        >
           <div className="pc-section-inner">
             <div className="pc-section-eyebrow">HOW IT WORKS</div>
+
             <h2 className="pc-section-title">
               From message to community impact
             </h2>
+
             <p className="pc-section-description">
               A simple workflow to help your team prepare and deliver
               multilingual public awareness campaigns.
@@ -1008,9 +1066,11 @@ export default function App() {
         <section className="pc-section" id="campaigns">
           <div className="pc-section-inner">
             <div className="pc-section-eyebrow">CAMPAIGNS</div>
+
             <h2 className="pc-section-title">
               Public awareness campaigns
             </h2>
+
             <p className="pc-section-description">
               Organize your awareness work and help important information
               reach the communities that need it.
@@ -1018,7 +1078,9 @@ export default function App() {
 
             <div className="pc-campaign-status">
               {campaigns.length > 0
-                ? `${campaigns.length} campaign${campaigns.length === 1 ? "" : "s"} available.`
+                ? `${campaigns.length} campaign${
+                    campaigns.length === 1 ? "" : "s"
+                  } available.`
                 : "Ready to start your first awareness campaign?"}
             </div>
           </div>
@@ -1029,9 +1091,11 @@ export default function App() {
             <div className="pc-section-eyebrow">
               ABOUT PUBLICCONNECT
             </div>
+
             <h2 className="pc-section-title">
               Every voice deserves to be heard
             </h2>
+
             <p className="pc-section-description">
               AI PublicConnect is designed to make public awareness
               communication more accessible, multilingual, and community
@@ -1043,10 +1107,12 @@ export default function App() {
 
         <section className="pc-cta">
           <h2>Ready to make a difference?</h2>
+
           <p>
             Join AI PublicConnect and help make important public awareness
             information accessible to everyone.
           </p>
+
           <button
             className="pc-primary-button"
             onClick={() => navigate("/register")}
